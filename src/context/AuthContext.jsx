@@ -21,7 +21,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = (userData, token, rememberMe) => {
-    const maxAge = rememberMe ? 60 * 60 * 24 * 7 : null; // 7 días si recuerda, sesión si no
+    const maxAge = rememberMe ? 60 * 60 * 24 * 7 : null;
     setCookie("auth_token", token, maxAge);
     setCookie("auth_user", JSON.stringify(userData), maxAge);
     setUser(userData);
@@ -32,8 +32,17 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  // Actualiza campos del usuario en estado y cookie (ej: nombre desde perfil)
+  const updateUserProfile = (updatedFields) => {
+    setUser((prev) => {
+      const next = { ...prev, ...updatedFields };
+      setCookie("auth_user", JSON.stringify(next), null);
+      return next;
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUserProfile }}>
       {children}
     </AuthContext.Provider>
   );

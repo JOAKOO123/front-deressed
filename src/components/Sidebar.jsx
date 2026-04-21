@@ -15,10 +15,17 @@ export default function Sidebar() {
       {/* Parte superior */}
       <div>
         <div className="flex flex-col items-center mb-6">
-          <div className="w-16 h-16 bg-gray-300 rounded-full"></div>
-          <p className="mt-3 text-sm font-semibold">
-            {user ? user.name : "Profile & Preferences"}
-          </p>
+          {/* Avatar + nombre clickeable → /profile */}
+          <button
+            onClick={() => navigate(user ? "/profile" : "/login")}
+            className="flex flex-col items-center group focus:outline-none"
+          >
+            <div className="w-16 h-16 bg-gray-300 rounded-full group-hover:ring-2 group-hover:ring-black transition-all" />
+            <p className="mt-3 text-sm font-semibold group-hover:underline underline-offset-2 transition-all">
+              {user ? user.name : "Profile & Preferences"}
+            </p>
+          </button>
+
           {user && (
             <p className="text-xs text-gray-400 mt-1">{user.email}</p>
           )}
