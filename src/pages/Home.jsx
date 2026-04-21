@@ -21,7 +21,7 @@ export default function Home() {
 
         <Sidebar />
 
-        <main className="w-3/5 p-6 flex flex-col items-center justify-center">
+        <main className="flex-1 p-6 flex flex-col items-center justify-center">
           <h2 className="text-xl font-semibold mb-6">
             Your Custom Outfits
           </h2>
