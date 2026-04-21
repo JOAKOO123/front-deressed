@@ -204,16 +204,25 @@ export default function AuthPage({ defaultTab = "login" }) {
             />
           )}
 
-          {/* Recordar sesión — solo en login */}
+          {/* Recordar sesión + olvidé contraseña — solo en login */}
           {isLogin && (
-            <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                className="w-4 h-4 accent-white rounded"
-                {...register("rememberMe")}
-              />
-              Guardar sesión
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 accent-white rounded"
+                  {...register("rememberMe")}
+                />
+                Guardar sesión
+              </label>
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="text-xs text-gray-400 hover:text-gray-200 transition-colors underline underline-offset-2"
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
           )}
 
           <button
