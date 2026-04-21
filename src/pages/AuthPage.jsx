@@ -1,52 +1,30 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useAuth } from "../context/AuthContext";
+import { authService } from "../services/authService";
 
-// ── Esquemas de validación ──────────────────────────────────────────
+// ── Validaciones ────────────────────────────────────────────────────
+const dominiosPermitidos = [
+  "gmail.com", "googlemail.com",
+  "hotmail.com", "hotmail.cl", "hotmail.es",
+  "outlook.com", "outlook.cl", "outlook.es",
+  "live.com", "live.cl", "msn.com",
+  "yahoo.com", "yahoo.es", "yahoo.cl",
+  "icloud.com", "me.com", "mac.com",
+  "protonmail.com", "proton.me",
+  "zoho.com",
+  "duocuc.cl", "uc.cl", "usach.cl", "uchile.cl",
+  "utem.cl", "udd.cl", "udp.cl", "uai.cl",
+  "pucv.cl", "uv.cl", "ufro.cl",
+];
+
 const emailValidation = z
   .string()
   .min(1, "El email es requerido")
   .refine((val) => {
-    const dominiosPermitidos = [
-      // Genéricos
-      "gmail.com",
-      "googlemail.com",
-      // Microsoft
-      "hotmail.com",
-      "hotmail.cl",
-      "hotmail.es",
-      "outlook.com",
-      "outlook.cl",
-      "outlook.es",
-      "live.com",
-      "live.cl",
-      "msn.com",
-      // Yahoo
-      "yahoo.com",
-      "yahoo.es",
-      "yahoo.cl",
-      // Otros populares
-      "icloud.com",
-      "me.com",
-      "mac.com",
-      "protonmail.com",
-      "proton.me",
-      "zoho.com",
-      // Chile
-      "duocuc.cl",
-      "uc.cl",
-      "usach.cl",
-      "uchile.cl",
-      "utem.cl",
-      "udd.cl",
-      "udp.cl",
-      "uai.cl",
-      "pucv.cl",
-      "uv.cl",
-      "ufro.cl",
-    ];
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!regex.test(val)) return false;
     const dominio = val.split("@")[1]?.toLowerCase();
@@ -65,6 +43,7 @@ const passwordValidation = z
 const loginSchema = z.object({
   email: emailValidation,
   password: passwordValidation,
+  rememberMe: z.boolean().optional(),
 });
 
 const registerSchema = z
@@ -78,20 +57,27 @@ const registerSchema = z
     path: ["confirmPassword"],
   });
 
-// ── Componente reutilizable para campo de formulario ────────────────
-function Field({ label, error, ...props }) {
+// ── Campo reutilizable ──────────────────────────────────────────────
+function Field({ label, error, isLogin, ...props }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+      <label className={`text-xs font-semibold uppercase tracking-wide ${isLogin ? "text-gray-400" : "text-gray-500"}`}>
         {label}
       </label>
       <input
         className={`border rounded-lg px-4 py-2.5 text-sm outline-none transition-colors
-          focus:border-black
-          ${error ? "border-red-400 bg-red-50" : "border-gray-200"}`}
+          ${isLogin
+            ? "bg-gray-900 border-gray-700 text-white placeholder-gray-500 focus:border-gray-400"
+            : "bg-white border-gray-200 text-black placeholder-gray-400 focus:border-black"
+          }
+          ${error ? "border-red-500" : ""}`}
         {...props}
       />
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && (
+        <p className="text-xs text-red-400 flex items-center gap-1">
+          <span>⚠</span> {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -99,7 +85,14 @@ function Field({ label, error, ...props }) {
 // ── Página principal ────────────────────────────────────────────────
 export default function AuthPage({ defaultTab = "login" }) {
   const navigate = useNavigate();
+  const { login, user } = useAuth();
   const isLogin = defaultTab === "login";
+  const [serverError, setServerError] = useState("");
+
+  // Si ya hay sesión activa, redirigir al dashboard
+  useEffect(() => {
+    if (user) navigate("/dashboard", { replace: true });
+  }, [user, navigate]);
 
   const schema = isLogin ? loginSchema : registerSchema;
 
@@ -110,14 +103,27 @@ export default function AuthPage({ defaultTab = "login" }) {
     reset,
   } = useForm({ resolver: zodResolver(schema) });
 
-  // Resetear el form al cambiar de tab
   useEffect(() => {
     reset();
+    setServerError("");
   }, [defaultTab, reset]);
 
-  const onSubmit = (data) => {
-    console.log("Form data:", data);
-    // Aquí conectas con tu backend
+  const onSubmit = async (data) => {
+    setServerError("");
+    try {
+      let result;
+      if (isLogin) {
+        result = await authService.login(data);
+      } else {
+        result = await authService.register(data);
+      }
+
+      // Guardar sesión (cookie) y redirigir
+      login(result.user, result.token, data.rememberMe ?? false);
+      navigate("/dashboard", { replace: true });
+    } catch (err) {
+      setServerError(err.message || "Ocurrió un error inesperado. Intenta de nuevo.");
+    }
   };
 
   return (
@@ -127,7 +133,7 @@ export default function AuthPage({ defaultTab = "login" }) {
           ${isLogin ? "bg-black text-white" : "bg-white text-black"}`}
       >
         {/* Toggle tabs */}
-        <div className={`flex border-b ${isLogin ? "border-gray-700" : "border-gray-200"}`}>
+        <div className={`flex ${isLogin ? "border-gray-800" : "border-gray-200"} border-b`}>
           <button
             onClick={() => navigate("/login")}
             className={`flex-1 py-4 text-sm font-semibold transition-colors
@@ -152,31 +158,34 @@ export default function AuthPage({ defaultTab = "login" }) {
 
         {/* Formulario */}
         <form onSubmit={handleSubmit(onSubmit)} className="p-8 flex flex-col gap-5">
-          <h1 className="text-2xl font-bold mb-2">
+          <h1 className="text-2xl font-bold">
             {isLogin ? "Bienvenido de vuelta" : "Crear cuenta"}
           </h1>
+
+          {/* Error del servidor */}
+          {serverError && (
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-sm text-red-400 flex items-center gap-2">
+              <span>✕</span>
+              {serverError}
+            </div>
+          )}
 
           <Field
             label="Email"
             type="email"
             placeholder="tu@email.com"
+            isLogin={isLogin}
             error={errors.email?.message}
             {...register("email")}
-            className={`border rounded-lg px-4 py-2.5 text-sm outline-none transition-colors
-              focus:border-${isLogin ? "white" : "black"}
-              ${isLogin ? "bg-gray-900 border-gray-700 text-white placeholder-gray-500" : "border-gray-200"}
-              ${errors.email ? "border-red-400" : ""}`}
           />
 
           <Field
             label="Contraseña"
             type="password"
             placeholder="••••••••"
+            isLogin={isLogin}
             error={errors.password?.message}
             {...register("password")}
-            className={`border rounded-lg px-4 py-2.5 text-sm outline-none transition-colors
-              ${isLogin ? "bg-gray-900 border-gray-700 text-white placeholder-gray-500" : "border-gray-200"}
-              ${errors.password ? "border-red-400" : ""}`}
           />
 
           {!isLogin && (
@@ -184,20 +193,33 @@ export default function AuthPage({ defaultTab = "login" }) {
               label="Confirmar contraseña"
               type="password"
               placeholder="••••••••"
+              isLogin={isLogin}
               error={errors.confirmPassword?.message}
               {...register("confirmPassword")}
             />
           )}
 
+          {/* Recordar sesión — solo en login */}
+          {isLogin && (
+            <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                className="w-4 h-4 accent-white rounded"
+                {...register("rememberMe")}
+              />
+              Guardar sesión
+            </label>
+          )}
+
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`mt-2 py-3 rounded-lg font-semibold text-sm transition-colors
+            className={`mt-2 py-3 rounded-lg font-semibold text-sm transition-all
               ${isLogin
                 ? "bg-white text-black hover:bg-gray-200"
                 : "bg-black text-white hover:bg-gray-800"
               }
-              disabled:opacity-50`}
+              disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             {isSubmitting
               ? "Cargando..."
