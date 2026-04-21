@@ -23,7 +23,7 @@ export default function Assistant() {
             <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-lg">
               ✨
             </div>
-            <span className="font-semibold text-sm">Style Assistant</span>
+            <span className="font-semibold text-sm">asistente de estilo</span>
           </div>
           <button
             onClick={() => setIsOpen(false)}
@@ -36,10 +36,10 @@ export default function Assistant() {
         {/* Mensajes */}
         <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-gray-50">
           <div className="bg-gray-200 text-gray-800 text-xs px-4 py-3 rounded-2xl rounded-tl-sm max-w-[80%]">
-            Hi! How can I help you find your style today?
+            ¡Hola! ¿Cómo puedo ayudarte a encontrar tu estilo hoy?
           </div>
           <div className="bg-black text-white text-xs px-4 py-3 rounded-2xl rounded-tr-sm max-w-[80%] self-end">
-            I need a winter outfit recommendation
+            Necesito una recomendación de atuendo para el invierno
           </div>
         </div>
 
@@ -47,7 +47,7 @@ export default function Assistant() {
         <div className="flex border-t border-gray-200 bg-white">
           <input
             type="text"
-            placeholder="Ask me anything..."
+            placeholder="Pregunta algo..."
             className="flex-1 px-4 py-3 text-sm outline-none"
           />
           <button className="bg-black text-white px-4 text-base hover:bg-gray-800 transition-colors">
