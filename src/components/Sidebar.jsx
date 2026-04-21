@@ -2,16 +2,17 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const NAV_ITEMS = [
-  { label: "My Style",            path: null            },
-  { label: "Clothing Preferences",path: null            },
-  { label: "Size Adjustment",     path: "/size-adjustment" },
-  { label: "Favorites",           path: null            },
-  { label: "Fit Settings",        path: null            },
+  { label: "Ropa",                 path: "/products"       },
+  { label: "My Style",             path: null              },
+  { label: "Clothing Preferences", path: null              },
+  { label: "Size Adjustment",      path: "/size-adjustment"},
+  { label: "Favorites",            path: null              },
+  { label: "Fit Settings",         path: null              },
 ];
 
 export default function Sidebar() {
-  const navigate  = useNavigate();
-  const location  = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
@@ -24,7 +25,6 @@ export default function Sidebar() {
       {/* Parte superior */}
       <div>
         <div className="flex flex-col items-center mb-6">
-          {/* Avatar + nombre clickeable → /profile */}
           <button
             onClick={() => navigate(user ? "/profile" : "/login")}
             className="flex flex-col items-center group focus:outline-none"
@@ -34,7 +34,6 @@ export default function Sidebar() {
               {user ? user.name : "Profile & Preferences"}
             </p>
           </button>
-
           {user && (
             <p className="text-xs text-gray-400 mt-1">{user.email}</p>
           )}
@@ -42,7 +41,7 @@ export default function Sidebar() {
 
         <nav className="space-y-1">
           {NAV_ITEMS.map(({ label, path }) => {
-            const isActive = path && location.pathname === path;
+            const isActive    = path && location.pathname === path;
             const isClickable = !!path;
             return isClickable ? (
               <button
@@ -57,10 +56,7 @@ export default function Sidebar() {
                 {label}
               </button>
             ) : (
-              <p
-                key={label}
-                className="px-3 py-2 text-sm text-gray-400 cursor-default"
-              >
+              <p key={label} className="px-3 py-2 text-sm text-gray-400 cursor-default">
                 {label}
               </p>
             );
