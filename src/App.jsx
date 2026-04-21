@@ -6,6 +6,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
+import SizeAdjustment from "./pages/SizeAdjustment";
 
 function App() {
   return (
@@ -17,19 +18,15 @@ function App() {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route
         path="/dashboard"
-        element={
-          <PrivateRoute>
-            <Dashboard />
-          </PrivateRoute>
-        }
+        element={<PrivateRoute><Dashboard /></PrivateRoute>}
       />
       <Route
         path="/profile"
-        element={
-          <PrivateRoute>
-            <Profile />
-          </PrivateRoute>
-        }
+        element={<PrivateRoute><Profile /></PrivateRoute>}
+      />
+      <Route
+        path="/size-adjustment"
+        element={<PrivateRoute><SizeAdjustment /></PrivateRoute>}
       />
     </Routes>
   );

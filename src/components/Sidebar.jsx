@@ -1,8 +1,17 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+const NAV_ITEMS = [
+  { label: "My Style",            path: null            },
+  { label: "Clothing Preferences",path: null            },
+  { label: "Size Adjustment",     path: "/size-adjustment" },
+  { label: "Favorites",           path: null            },
+  { label: "Fit Settings",        path: null            },
+];
+
 export default function Sidebar() {
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
+  const location  = useLocation();
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
@@ -31,12 +40,31 @@ export default function Sidebar() {
           )}
         </div>
 
-        <nav className="space-y-4 text-gray-600">
-          <p>My Style</p>
-          <p>Clothing Preferences</p>
-          <p>Size Adjustment</p>
-          <p>Favorites</p>
-          <p>Fit Settings</p>
+        <nav className="space-y-1">
+          {NAV_ITEMS.map(({ label, path }) => {
+            const isActive = path && location.pathname === path;
+            const isClickable = !!path;
+            return isClickable ? (
+              <button
+                key={label}
+                onClick={() => navigate(path)}
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors
+                  ${isActive
+                    ? "bg-black text-white font-semibold"
+                    : "text-gray-600 hover:bg-gray-200 hover:text-black"
+                  }`}
+              >
+                {label}
+              </button>
+            ) : (
+              <p
+                key={label}
+                className="px-3 py-2 text-sm text-gray-400 cursor-default"
+              >
+                {label}
+              </p>
+            );
+          })}
         </nav>
       </div>
 
