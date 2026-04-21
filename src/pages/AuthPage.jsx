@@ -61,14 +61,19 @@ const registerSchema = z
 function Field({ label, error, isLogin, ...props }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className={`text-xs font-semibold uppercase tracking-wide ${isLogin ? "text-gray-400" : "text-gray-500"}`}>
+      <label
+        className={`text-xs font-semibold uppercase tracking-wide ${
+          isLogin ? "text-gray-400" : "text-gray-500"
+        }`}
+      >
         {label}
       </label>
       <input
         className={`border rounded-lg px-4 py-2.5 text-sm outline-none transition-colors
-          ${isLogin
-            ? "bg-gray-900 border-gray-700 text-white placeholder-gray-500 focus:border-gray-400"
-            : "bg-white border-gray-200 text-black placeholder-gray-400 focus:border-black"
+          ${
+            isLogin
+              ? "bg-gray-900 border-gray-700 text-white placeholder-gray-500 focus:border-gray-400"
+              : "bg-white border-gray-200 text-black placeholder-gray-400 focus:border-black"
           }
           ${error ? "border-red-500" : ""}`}
         {...props}
@@ -103,6 +108,7 @@ export default function AuthPage({ defaultTab = "login" }) {
     reset,
   } = useForm({ resolver: zodResolver(schema) });
 
+  // Resetear el form al cambiar de tab
   useEffect(() => {
     reset();
     setServerError("");
@@ -117,8 +123,7 @@ export default function AuthPage({ defaultTab = "login" }) {
       } else {
         result = await authService.register(data);
       }
-
-      // Guardar sesión (cookie) y redirigir
+      // Guardar sesión y redirigir al dashboard
       login(result.user, result.token, data.rememberMe ?? false);
       navigate("/dashboard", { replace: true });
     } catch (err) {
@@ -133,7 +138,7 @@ export default function AuthPage({ defaultTab = "login" }) {
           ${isLogin ? "bg-black text-white" : "bg-white text-black"}`}
       >
         {/* Toggle tabs */}
-        <div className={`flex ${isLogin ? "border-gray-800" : "border-gray-200"} border-b`}>
+        <div className={`flex border-b ${isLogin ? "border-gray-800" : "border-gray-200"}`}>
           <button
             onClick={() => navigate("/login")}
             className={`flex-1 py-4 text-sm font-semibold transition-colors
