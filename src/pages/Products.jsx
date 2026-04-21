@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import ProductCard from "../components/ProductCard";
+import TopBar from "../components/TopBar";
 import { productService } from "../services/productService";
 
 const CATEGORIES = [
@@ -43,7 +44,11 @@ export default function Products() {
 
   return (
     <div className="h-screen bg-gray-100">
-      <div className="w-full h-full bg-white flex overflow-hidden">
+      <div className="w-full h-full bg-white flex flex-col overflow-hidden">
+
+        <TopBar />
+
+        <div className="flex flex-1 overflow-hidden">
 
         <Sidebar />
 
@@ -192,6 +197,7 @@ export default function Products() {
             </section>
           </div>
         </main>
+        </div>
       </div>
     </div>
   );
