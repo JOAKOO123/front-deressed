@@ -7,137 +7,50 @@ export default function Assistant() {
     <>
       {/* Panel del asistente */}
       <div
-        style={{
-          position: "fixed",
-          bottom: "90px",
-          right: "24px",
-          width: "320px",
-          background: "white",
-          borderRadius: "20px",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-          transformOrigin: "bottom right",
-          transform: isOpen ? "scale(1)" : "scale(0.7)",
-          opacity: isOpen ? 1 : 0,
-          pointerEvents: isOpen ? "all" : "none",
-          transition: "transform 0.25s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s ease",
-          zIndex: 100,
-          maxHeight: "480px",
-        }}
+        className={`
+          fixed bottom-[90px] right-6 w-80 bg-white rounded-2xl shadow-2xl
+          flex flex-col overflow-hidden z-[100] max-h-[480px]
+          origin-bottom-right transition-all duration-300
+          ${isOpen
+            ? "scale-100 opacity-100 pointer-events-auto"
+            : "scale-75 opacity-0 pointer-events-none"
+          }
+        `}
       >
         {/* Header */}
-        <div
-          style={{
-            background: "black",
-            color: "white",
-            padding: "16px 20px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div
-              style={{
-                width: "32px",
-                height: "32px",
-                background: "#e0e7ff",
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "18px",
-              }}
-            >
+        <div className="bg-black text-white px-5 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-lg">
               ✨
             </div>
-            <span style={{ fontWeight: 600, fontSize: "15px" }}>Style Assistant</span>
+            <span className="font-semibold text-sm">Style Assistant</span>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            style={{
-              background: "none",
-              border: "none",
-              color: "white",
-              fontSize: "20px",
-              cursor: "pointer",
-              lineHeight: 1,
-            }}
+            className="text-white text-xl leading-none hover:text-gray-300 transition-colors"
           >
             ×
           </button>
         </div>
 
         {/* Mensajes */}
-        <div
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            padding: "16px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px",
-            background: "#f9fafb",
-          }}
-        >
-          <div
-            style={{
-              background: "#e5e7eb",
-              padding: "10px 14px",
-              borderRadius: "16px 16px 16px 4px",
-              fontSize: "13px",
-              maxWidth: "80%",
-            }}
-          >
+        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-gray-50">
+          <div className="bg-gray-200 text-gray-800 text-xs px-4 py-3 rounded-2xl rounded-tl-sm max-w-[80%]">
             Hi! How can I help you find your style today?
           </div>
-
-          <div
-            style={{
-              background: "black",
-              color: "white",
-              padding: "10px 14px",
-              borderRadius: "16px 16px 4px 16px",
-              fontSize: "13px",
-              maxWidth: "80%",
-              alignSelf: "flex-end",
-            }}
-          >
+          <div className="bg-black text-white text-xs px-4 py-3 rounded-2xl rounded-tr-sm max-w-[80%] self-end">
             I need a winter outfit recommendation
           </div>
         </div>
 
         {/* Input */}
-        <div
-          style={{
-            display: "flex",
-            borderTop: "1px solid #e5e7eb",
-            background: "white",
-          }}
-        >
+        <div className="flex border-t border-gray-200 bg-white">
           <input
             type="text"
             placeholder="Ask me anything..."
-            style={{
-              flex: 1,
-              border: "none",
-              padding: "12px 16px",
-              fontSize: "13px",
-              outline: "none",
-            }}
+            className="flex-1 px-4 py-3 text-sm outline-none"
           />
-          <button
-            style={{
-              background: "black",
-              color: "white",
-              border: "none",
-              padding: "12px 16px",
-              cursor: "pointer",
-              fontSize: "16px",
-            }}
-          >
+          <button className="bg-black text-white px-4 text-base hover:bg-gray-800 transition-colors">
             →
           </button>
         </div>
@@ -146,33 +59,10 @@ export default function Assistant() {
       {/* Burbuja flotante */}
       <button
         onClick={() => setIsOpen((prev) => !prev)}
-        style={{
-          position: "fixed",
-          bottom: "24px",
-          right: "24px",
-          width: "56px",
-          height: "56px",
-          borderRadius: "50%",
-          background: "black",
-          color: "white",
-          border: "none",
-          cursor: "pointer",
-          fontSize: "24px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
-          transition: "transform 0.2s ease, box-shadow 0.2s ease",
-          zIndex: 101,
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "scale(1.1)";
-          e.currentTarget.style.boxShadow = "0 6px 28px rgba(0,0,0,0.35)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.25)";
-        }}
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-black text-white text-2xl
+                   flex items-center justify-center z-[101]
+                   shadow-lg hover:scale-110 hover:shadow-xl
+                   transition-all duration-200"
         title="Style Assistant"
       >
         {isOpen ? "×" : "✨"}
