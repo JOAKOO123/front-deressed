@@ -9,6 +9,7 @@ import Profile from "./pages/Profile";
 import SizeAdjustment from "./pages/SizeAdjustment";
 import Products from "./pages/Products";
 import MyStyle from "./pages/MyStyle";
+import ClothingPreferences from "./pages/ClothingPreferences";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
       <Route path="/size-adjustment" element={<PrivateRoute><SizeAdjustment /></PrivateRoute>} />
       <Route path="/products"        element={<PrivateRoute><Products /></PrivateRoute>} />
       <Route path="/my-style"        element={<PrivateRoute><MyStyle /></PrivateRoute>} />
+      <Route path="/clothing-preferences" element={<PrivateRoute><ClothingPreferences /></PrivateRoute>} />
     </Routes>
   );
 }

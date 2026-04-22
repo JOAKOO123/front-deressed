@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 const NAV_ITEMS = [
   { label: "Ropa",                 path: "/products"       },
   { label: "My Style", path: "/my-style" },
-  { label: "Clothing Preferences", path: null              },
+  { label: "Clothing Preferences", path: "/clothing-preferences" },
   { label: "Size Adjustment",      path: "/size-adjustment"},
   { label: "Favorites",            path: null              },
   { label: "Fit Settings",         path: null              },
