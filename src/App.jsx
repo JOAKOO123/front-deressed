@@ -8,6 +8,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import SizeAdjustment from "./pages/SizeAdjustment";
 import Products from "./pages/Products";
+import MyStyle from "./pages/MyStyle";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
       <Route path="/profile"         element={<PrivateRoute><Profile /></PrivateRoute>} />
       <Route path="/size-adjustment" element={<PrivateRoute><SizeAdjustment /></PrivateRoute>} />
       <Route path="/products"        element={<PrivateRoute><Products /></PrivateRoute>} />
+      <Route path="/my-style"        element={<PrivateRoute><MyStyle /></PrivateRoute>} />
     </Routes>
   );
 }
