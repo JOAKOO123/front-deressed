@@ -2,28 +2,68 @@ import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext(null);
 
+// ── Helpers de localStorage ─────────────────────────────────────────
+const TOKEN_KEY = "auth_token";
+const USER_KEY  = "auth_user";
+
+function saveSession(token, userData) {
+  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(USER_KEY, JSON.stringify(userData));
+}
+
+function clearSession() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+}
+
+function getStoredToken() {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+function getStoredUser() {
+  try {
+    const raw = localStorage.getItem(USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+// ── Validación de expiración JWT (criterio 60) ──────────────────────
+function isTokenExpired(token) {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return false;
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+    if (!payload.exp) return false;
+    return Date.now() / 1000 > payload.exp;
+  } catch {
+    return false;
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Al cargar la app, revisar si hay sesión guardada en cookie
   useEffect(() => {
-    const token = getCookie("auth_token");
-    const savedUser = getCookie("auth_user");
+    const token = getStoredToken();
+    const savedUser = getStoredUser();
+
     if (token && savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch {
+      if (isTokenExpired(token)) {
         clearSession();
+      } else {
+        setUser(savedUser);
       }
     }
     setLoading(false);
   }, []);
 
-  const login = (userData, token, rememberMe) => {
-    const maxAge = rememberMe ? 60 * 60 * 24 * 7 : null;
-    setCookie("auth_token", token, maxAge);
-    setCookie("auth_user", JSON.stringify(userData), maxAge);
+  const login = (userData, token) => {
+    saveSession(token, userData);
     setUser(userData);
   };
 
@@ -32,17 +72,18 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  // Actualiza campos del usuario en estado y cookie (ej: nombre desde perfil)
   const updateUserProfile = (updatedFields) => {
     setUser((prev) => {
       const next = { ...prev, ...updatedFields };
-      setCookie("auth_user", JSON.stringify(next), null);
+      localStorage.setItem(USER_KEY, JSON.stringify(next));
       return next;
     });
   };
 
+  const getToken = () => getStoredToken();
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, updateUserProfile }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUserProfile, getToken }}>
       {children}
     </AuthContext.Provider>
   );
@@ -50,23 +91,4 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   return useContext(AuthContext);
-}
-
-// ── Helpers de cookies ──────────────────────────────────────────────
-function setCookie(name, value, maxAge) {
-  let cookie = `${name}=${encodeURIComponent(value)}; path=/; SameSite=Strict`;
-  if (maxAge) cookie += `; max-age=${maxAge}`;
-  document.cookie = cookie;
-}
-
-function getCookie(name) {
-  const match = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith(`${name}=`));
-  return match ? decodeURIComponent(match.split("=")[1]) : null;
-}
-
-function clearSession() {
-  document.cookie = "auth_token=; path=/; max-age=0";
-  document.cookie = "auth_user=; path=/; max-age=0";
 }

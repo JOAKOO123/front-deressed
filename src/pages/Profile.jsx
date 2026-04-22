@@ -32,7 +32,7 @@ function Field({ label, error, hint, ...props }) {
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, updateUserProfile } = useAuth();
+  const { user, updateUserProfile, getToken } = useAuth();
   const [loading, setLoading] = useState(true);
   const [serverError, setServerError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -40,16 +40,16 @@ export default function Profile() {
 
   useEffect(() => {
     if (!user) { navigate("/login", { replace: true }); return; }
-    profileService.getProfile(getCookie("auth_token"))
+    profileService.getProfile(getToken())
       .then((data) => { if (data) reset(data); })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [user, navigate, reset]);
+  }, [user, navigate, reset, getToken]);
 
   const onSubmit = async (data) => {
     setServerError(""); setSuccessMessage("");
     try {
-      const saved = await profileService.updateProfile(getCookie("auth_token"), data);
+      const saved = await profileService.updateProfile(getToken(), data);
       updateUserProfile({ name: `${saved.firstName} ${saved.lastName}` });
       reset(saved);
       setSuccessMessage("¡Perfil guardado correctamente!");
@@ -124,9 +124,4 @@ export default function Profile() {
       </div>
     </div>
   );
-}
-
-function getCookie(name) {
-  const match = document.cookie.split("; ").find((r) => r.startsWith(`${name}=`));
-  return match ? decodeURIComponent(match.split("=")[1]) : null;
 }
