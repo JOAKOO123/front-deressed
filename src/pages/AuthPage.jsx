@@ -21,7 +21,7 @@ const emailValidation = z.string().min(1, "El email es requerido").refine((val) 
 }, "Ingresa un correo válido (Gmail, Outlook, Hotmail, DuocUC, etc.)");
 
 const passwordValidation = z.string()
-  .min(6, "Mínimo 6 caracteres")
+  .min(8, "Mínimo 8 caracteres")
   .refine((val) => /[A-Z]/.test(val), "Debe tener al menos una mayúscula")
   .refine((val) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(val), "Debe tener al menos un carácter especial (!@#$%...)");
 
