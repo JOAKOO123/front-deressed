@@ -18,14 +18,20 @@ export default function ProductCard({ product }) {
       {/* Imagen */}
       <div className="relative aspect-square overflow-hidden bg-gray-50">
         <img
-          src={product.image}
+          src={product.image_url}
           alt={product.name}
           className="w-full h-full object-cover"
         />
-        {/* Badge categoría sobre la imagen */}
+        {/* Badge categoría */}
         <span className={`absolute top-2 left-2 text-xs font-semibold px-2 py-1 rounded-full ${CATEGORY_COLORS[product.category]}`}>
           {CATEGORY_LABELS[product.category] || product.category}
         </span>
+        {/* Badge sin stock */}
+        {!product.in_stock && (
+          <span className="absolute top-2 right-2 text-xs font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-500">
+            Sin stock
+          </span>
+        )}
       </div>
 
       {/* Info */}
@@ -33,18 +39,39 @@ export default function ProductCard({ product }) {
         <p className="text-sm font-semibold text-black leading-tight line-clamp-2">
           {product.name}
         </p>
+
+        {/* Talla y fit */}
+        {(product.size || product.fit) && (
+          <div className="flex gap-2 flex-wrap">
+            {product.size && (
+              <span className="text-xs px-2 py-0.5 rounded-full border border-gray-200 text-gray-500">
+                Talla {product.size}
+              </span>
+            )}
+            {product.fit && (
+              <span className="text-xs px-2 py-0.5 rounded-full border border-gray-200 text-gray-500">
+                {product.fit}
+              </span>
+            )}
+          </div>
+        )}
+
         <p className="text-base font-bold text-black">
           ${product.price.toLocaleString("es-CL")}
         </p>
 
         {/* Link a la prenda */}
         <a
-          href={product.link}
+          href={product.product_link}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-auto pt-2 w-full text-center text-xs font-semibold py-2 rounded-lg border border-black text-black hover:bg-black hover:text-white transition-colors"
+          className={`mt-auto pt-2 w-full text-center text-xs font-semibold py-2 rounded-lg border transition-colors
+            ${product.in_stock
+              ? "border-black text-black hover:bg-black hover:text-white"
+              : "border-gray-200 text-gray-400 pointer-events-none"
+            }`}
         >
-          Ver prenda →
+          {product.in_stock ? "Ver prenda →" : "Sin stock"}
         </a>
       </div>
     </div>

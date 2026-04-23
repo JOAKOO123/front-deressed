@@ -11,16 +11,19 @@ const SHOE_SIZES_CL  = ["35","36","37","38","39","40","41","42","43","44","45","
 const JEAN_SIZES     = ["28","29","30","31","32","33","34","36","38","40"];
 const FIT_TYPES      = ["Slim","Regular","Relaxed","Oversize"];
 
+// Campos alineados con user_sizes ({type, value}) + user_measurements (_cm)
 const sizeSchema = z.object({
-  clothingSize:  z.string().min(1, "Selecciona una talla"),
-  shoeSize:      z.string().min(1, "Selecciona un número"),
-  jeanSize:      z.string().min(1, "Selecciona una talla"),
-  fitPreference: z.string().min(1, "Selecciona un tipo de fit"),
-  chest:  z.string().regex(/^\d{2,3}$/, "Ingresa cm (ej: 95)").or(z.literal("")),
-  waist:  z.string().regex(/^\d{2,3}$/, "Ingresa cm (ej: 80)").or(z.literal("")),
-  hips:   z.string().regex(/^\d{2,3}$/, "Ingresa cm (ej: 95)").or(z.literal("")),
-  height: z.string().regex(/^\d{3}$/, "Ingresa cm (ej: 175)").or(z.literal("")),
-  weight: z.string().regex(/^\d{2,3}$/, "Ingresa kg (ej: 70)").or(z.literal("")),
+  clothingSize:     z.string().min(1, "Selecciona una talla"),
+  shoeSize:         z.string().min(1, "Selecciona un número"),
+  jeanSize:         z.string().min(1, "Selecciona una talla"),
+  fitPreference:    z.string().min(1, "Selecciona un tipo de fit"),
+  // user_measurements
+  shoulders_cm:     z.string().regex(/^\d{2,3}$/, "Ingresa cm (ej: 44)").or(z.literal("")),
+  chest_cm:         z.string().regex(/^\d{2,3}$/, "Ingresa cm (ej: 95)").or(z.literal("")),
+  waist_cm:         z.string().regex(/^\d{2,3}$/, "Ingresa cm (ej: 80)").or(z.literal("")),
+  hips_cm:          z.string().regex(/^\d{2,3}$/, "Ingresa cm (ej: 95)").or(z.literal("")),
+  torso_length_cm:  z.string().regex(/^\d{2,3}$/, "Ingresa cm (ej: 60)").or(z.literal("")),
+  leg_length_cm:    z.string().regex(/^\d{2,3}$/, "Ingresa cm (ej: 80)").or(z.literal("")),
 });
 
 function Field({ label, error, hint, ...props }) {
@@ -123,20 +126,23 @@ export default function SizeAdjustment() {
             {serverError && <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-sm text-red-500 flex items-center gap-2"><span>✕</span>{serverError}</div>}
             {successMessage && <div className="bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-3 text-sm text-green-600 flex items-center gap-2"><span>✓</span>{successMessage}</div>}
 
+            {/* user_sizes */}
             <SizeSelector label="Talla de ropa" options={CLOTHING_SIZES} value={watchedClothing} onChange={(v) => setValue("clothingSize", v, { shouldDirty: true })} error={errors.clothingSize?.message} />
             <SizeSelector label="Talla de zapatos (CL)" options={SHOE_SIZES_CL} value={watchedShoe} onChange={(v) => setValue("shoeSize", v, { shouldDirty: true })} error={errors.shoeSize?.message} />
             <SizeSelector label="Talla de jeans (cintura)" options={JEAN_SIZES} value={watchedJean} onChange={(v) => setValue("jeanSize", v, { shouldDirty: true })} error={errors.jeanSize?.message} />
             <SizeSelector label="Fit preferido" options={FIT_TYPES} value={watchedFit} onChange={(v) => setValue("fitPreference", v, { shouldDirty: true })} error={errors.fitPreference?.message} />
 
+            {/* user_measurements (campos _cm alineados con la BD) */}
             <div className="flex flex-col gap-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Medidas corporales (cm/kg) — opcionales</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Medidas corporales — opcionales</p>
               <div className="grid grid-cols-2 gap-4">
-                <Field label="Pecho"   type="number" placeholder="95"  hint="en cm" error={errors.chest?.message}  {...register("chest")}  />
-                <Field label="Cintura" type="number" placeholder="80"  hint="en cm" error={errors.waist?.message}  {...register("waist")}  />
-                <Field label="Cadera"  type="number" placeholder="95"  hint="en cm" error={errors.hips?.message}   {...register("hips")}   />
-                <Field label="Altura"  type="number" placeholder="175" hint="en cm" error={errors.height?.message} {...register("height")} />
+                <Field label="Hombros"        type="number" placeholder="44"  hint="en cm" error={errors.shoulders_cm?.message}    {...register("shoulders_cm")}    />
+                <Field label="Pecho"          type="number" placeholder="95"  hint="en cm" error={errors.chest_cm?.message}         {...register("chest_cm")}         />
+                <Field label="Cintura"        type="number" placeholder="80"  hint="en cm" error={errors.waist_cm?.message}         {...register("waist_cm")}         />
+                <Field label="Cadera"         type="number" placeholder="95"  hint="en cm" error={errors.hips_cm?.message}          {...register("hips_cm")}          />
+                <Field label="Largo torso"    type="number" placeholder="60"  hint="en cm" error={errors.torso_length_cm?.message}  {...register("torso_length_cm")}  />
+                <Field label="Largo pierna"   type="number" placeholder="80"  hint="en cm" error={errors.leg_length_cm?.message}    {...register("leg_length_cm")}    />
               </div>
-              <Field label="Peso" type="number" placeholder="70" hint="en kg" error={errors.weight?.message} {...register("weight")} />
             </div>
 
             <button type="submit" disabled={isSubmitting || !isDirty} className="mt-2 py-3 rounded-lg font-semibold text-sm bg-black text-white hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
