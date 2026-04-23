@@ -5,15 +5,26 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "../context/AuthContext";
 import { profileService } from "../services/profileService";
+import { sizeService } from "../services/sizeService";
+import { calculateCompletion } from "../services/completionService";
+import ProfileCompletion from "../components/ProfileCompletion";
+
+// ── Servicios mock locales (reemplaza con imports reales cuando existan) ─────
+let mockMyStyle = null;
+let mockPreferences = null;
+const delay = (ms) => new Promise((r) => setTimeout(r, ms));
+const myStyleService     = { async get(token) { await delay(400); return mockMyStyle || null; } };
+const preferencesService = { async get(token) { await delay(400); return mockPreferences || null; } };
+// ─────────────────────────────────────────────────────────────────────────────
 
 const profileSchema = z.object({
-  firstName:  z.string().min(2, "Mínimo 2 caracteres").max(50, "Máximo 50 caracteres"),
-  lastName:   z.string().min(2, "Mínimo 2 caracteres").max(50, "Máximo 50 caracteres"),
-  phone:      z.string().regex(/^\+?[\d\s\-()]{7,15}$/, "Número de teléfono inválido").or(z.literal("")),
-  birthDate:  z.string().optional(),
-  city:       z.string().max(60).optional(),
-  country:    z.string().max(60).optional(),
-  bio:        z.string().max(200, "Máximo 200 caracteres").optional(),
+  firstName: z.string().min(2, "Mínimo 2 caracteres").max(50, "Máximo 50 caracteres"),
+  lastName:  z.string().min(2, "Mínimo 2 caracteres").max(50, "Máximo 50 caracteres"),
+  phone:     z.string().regex(/^\+?[\d\s\-()]{7,15}$/, "Número de teléfono inválido").or(z.literal("")),
+  birthDate: z.string().optional(),
+  city:      z.string().max(60).optional(),
+  country:   z.string().max(60).optional(),
+  bio:       z.string().max(200, "Máximo 200 caracteres").optional(),
 });
 
 function Field({ label, error, hint, ...props }) {
@@ -49,10 +60,16 @@ export default function Profile() {
   const [successMessage, setSuccess]  = useState("");
   const [savedData, setSavedData]     = useState(null);
 
+  // ── Estado para completitud ───────────────────────────────────────────
+  const [completionLoading, setCompletionLoading] = useState(true);
+  const [completion, setCompletion]               = useState(null);
+  // ─────────────────────────────────────────────────────────────────────
+
   const { register, handleSubmit, reset, formState: { errors, isSubmitting, isDirty } } = useForm({
     resolver: zodResolver(profileSchema),
   });
 
+  // ── Carga de perfil ───────────────────────────────────────────────────
   useEffect(() => {
     if (!user) { navigate("/login", { replace: true }); return; }
     profileService.getProfile(getToken())
@@ -62,6 +79,41 @@ export default function Profile() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [user, navigate, reset, getToken]);
+
+  // ── Carga de completitud (perfil + tallas + estilo + preferencias) ────
+  useEffect(() => {
+    if (!user) return;
+    const token = getToken();
+
+    Promise.allSettled([
+      profileService.getProfile(token),
+      sizeService.getSizes(token),
+      myStyleService.get(token),
+      preferencesService.get(token),
+    ]).then(([profileRes, sizesRes, styleRes, prefsRes]) => {
+      const profile     = profileRes.status     === "fulfilled" ? profileRes.value     : null;
+      const sizes       = sizesRes.status       === "fulfilled" ? sizesRes.value       : null;
+      const myStyle     = styleRes.status       === "fulfilled" ? styleRes.value       : null;
+      const preferences = prefsRes.status       === "fulfilled" ? prefsRes.value       : null;
+      setCompletion(calculateCompletion(profile, sizes, myStyle, preferences));
+    }).finally(() => setCompletionLoading(false));
+  }, [user, getToken]);
+
+  // ── Recalcula completitud cuando el perfil se guarda ─────────────────
+  const refreshCompletion = async () => {
+    const token = getToken();
+    const [profileRes, sizesRes, styleRes, prefsRes] = await Promise.allSettled([
+      profileService.getProfile(token),
+      sizeService.getSizes(token),
+      myStyleService.get(token),
+      preferencesService.get(token),
+    ]);
+    const profile     = profileRes.status === "fulfilled" ? profileRes.value : null;
+    const sizes       = sizesRes.status   === "fulfilled" ? sizesRes.value   : null;
+    const myStyle     = styleRes.status   === "fulfilled" ? styleRes.value   : null;
+    const preferences = prefsRes.status   === "fulfilled" ? prefsRes.value   : null;
+    setCompletion(calculateCompletion(profile, sizes, myStyle, preferences));
+  };
 
   const handleEdit = () => {
     reset(savedData || {});
@@ -85,6 +137,8 @@ export default function Profile() {
       setSuccess("¡Perfil actualizado correctamente!");
       setEditing(false);
       setTimeout(() => setSuccess(""), 3500);
+      // Recalcula la barra después de guardar
+      await refreshCompletion();
     } catch (err) {
       setServerError(err.message || "Ocurrió un error al guardar. Intenta de nuevo.");
     }
@@ -114,83 +168,93 @@ export default function Profile() {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <Header />
       <div className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-lg rounded-2xl shadow-xl overflow-hidden bg-white text-black">
-          <div className="flex border-b border-gray-200">
-            <div className="flex-1 py-4 text-sm font-semibold text-black border-b-2 border-black text-center">Mi perfil</div>
-          </div>
-          <div className="p-8 flex flex-col gap-5">
+        <div className="w-full max-w-lg flex flex-col gap-4">
 
-            {/* Avatar + botón editar */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center text-2xl text-gray-400 shrink-0">👤</div>
-                <div className="flex flex-col gap-0.5">
-                  <p className="text-sm font-semibold">{user?.name || "Sin nombre"}</p>
-                  <p className="text-xs text-gray-400">{user?.email}</p>
-                </div>
-              </div>
-              {!editing && (
-                <button
-                  type="button"
-                  onClick={handleEdit}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-black text-sm font-semibold hover:bg-gray-50 transition-colors"
-                >
-                  ✏️ Editar
-                </button>
-              )}
+          {/* ── BARRA DE COMPLETITUD ── */}
+          <ProfileCompletion
+            completion={completion ?? { sections: [], percent: 0, doneFields: 0, totalFields: 0 }}
+            loading={completionLoading}
+          />
+
+          {/* ── TARJETA DE PERFIL ── */}
+          <div className="rounded-2xl shadow-xl overflow-hidden bg-white text-black">
+            <div className="flex border-b border-gray-200">
+              <div className="flex-1 py-4 text-sm font-semibold text-black border-b-2 border-black text-center">Mi perfil</div>
             </div>
+            <div className="p-8 flex flex-col gap-5">
 
-            {serverError    && <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-sm text-red-500 flex items-center gap-2"><span>✕</span>{serverError}</div>}
-            {successMessage && <div className="bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-3 text-sm text-green-600 flex items-center gap-2"><span>✓</span>{successMessage}</div>}
-
-            {/* Modo vista */}
-            {!editing && (
-              <div className="flex flex-col">
-                <div className="grid grid-cols-2 gap-x-6">
-                  <InfoRow label="Nombre"   value={savedData?.firstName} />
-                  <InfoRow label="Apellido" value={savedData?.lastName}  />
+              {/* Avatar + botón editar */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center text-2xl text-gray-400 shrink-0">👤</div>
+                  <div className="flex flex-col gap-0.5">
+                    <p className="text-sm font-semibold">{user?.name || "Sin nombre"}</p>
+                    <p className="text-xs text-gray-400">{user?.email}</p>
+                  </div>
                 </div>
-                <InfoRow label="Teléfono"            value={savedData?.phone}     />
-                <InfoRow label="Fecha de nacimiento" value={savedData?.birthDate} />
-                <div className="grid grid-cols-2 gap-x-6">
-                  <InfoRow label="Ciudad" value={savedData?.city}    />
-                  <InfoRow label="País"   value={savedData?.country} />
-                </div>
-                <InfoRow label="Sobre mí" value={savedData?.bio} />
-                {!savedData && (
-                  <p className="text-sm text-gray-400 text-center mt-4">
-                    Aún no has completado tu perfil.{" "}
-                    <button onClick={handleEdit} className="underline text-black font-semibold">Completar ahora</button>
-                  </p>
+                {!editing && (
+                  <button
+                    type="button"
+                    onClick={handleEdit}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-black text-sm font-semibold hover:bg-gray-50 transition-colors"
+                  >
+                    ✏️ Editar
+                  </button>
                 )}
               </div>
-            )}
 
-            {/* Modo edición */}
-            {editing && (
-              <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
-                <div className="grid grid-cols-2 gap-4">
-                  <Field label="Nombre"   type="text" placeholder="Juan"  error={errors.firstName?.message} {...register("firstName")} />
-                  <Field label="Apellido" type="text" placeholder="Pérez" error={errors.lastName?.message}  {...register("lastName")}  />
-                </div>
-                <Field label="Teléfono" type="tel" placeholder="+56 9 1234 5678" error={errors.phone?.message} {...register("phone")} />
-                <Field label="Fecha de nacimiento" type="date" error={errors.birthDate?.message} {...register("birthDate")} />
-                <div className="grid grid-cols-2 gap-4">
-                  <Field label="Ciudad" type="text" placeholder="Santiago" error={errors.city?.message}    {...register("city")}    />
-                  <Field label="País"   type="text" placeholder="Chile"    error={errors.country?.message} {...register("country")} />
-                </div>
-                <Field as="textarea" label="Sobre mí" placeholder="Cuéntanos algo sobre tu estilo..." hint="Máximo 200 caracteres" error={errors.bio?.message} {...register("bio")} />
-                <div className="flex gap-3 mt-2">
-                  <button type="button" onClick={handleCancel} className="flex-1 py-3 rounded-lg font-semibold text-sm border border-gray-300 text-gray-600 hover:bg-gray-50 transition-all">
-                    Cancelar
-                  </button>
-                  <button type="submit" disabled={isSubmitting || !isDirty} className="flex-1 py-3 rounded-lg font-semibold text-sm bg-black text-white hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
-                    {isSubmitting ? "Guardando..." : "Guardar cambios"}
-                  </button>
-                </div>
-              </form>
-            )}
+              {serverError    && <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-sm text-red-500 flex items-center gap-2"><span>✕</span>{serverError}</div>}
+              {successMessage && <div className="bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-3 text-sm text-green-600 flex items-center gap-2"><span>✓</span>{successMessage}</div>}
 
+              {/* Modo vista */}
+              {!editing && (
+                <div className="flex flex-col">
+                  <div className="grid grid-cols-2 gap-x-6">
+                    <InfoRow label="Nombre"   value={savedData?.firstName} />
+                    <InfoRow label="Apellido" value={savedData?.lastName}  />
+                  </div>
+                  <InfoRow label="Teléfono"            value={savedData?.phone}     />
+                  <InfoRow label="Fecha de nacimiento" value={savedData?.birthDate} />
+                  <div className="grid grid-cols-2 gap-x-6">
+                    <InfoRow label="Ciudad" value={savedData?.city}    />
+                    <InfoRow label="País"   value={savedData?.country} />
+                  </div>
+                  <InfoRow label="Sobre mí" value={savedData?.bio} />
+                  {!savedData && (
+                    <p className="text-sm text-gray-400 text-center mt-4">
+                      Aún no has completado tu perfil.{" "}
+                      <button onClick={handleEdit} className="underline text-black font-semibold">Completar ahora</button>
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Modo edición */}
+              {editing && (
+                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+                  <div className="grid grid-cols-2 gap-4">
+                    <Field label="Nombre"   type="text" placeholder="Juan"  error={errors.firstName?.message} {...register("firstName")} />
+                    <Field label="Apellido" type="text" placeholder="Pérez" error={errors.lastName?.message}  {...register("lastName")}  />
+                  </div>
+                  <Field label="Teléfono" type="tel" placeholder="+56 9 1234 5678" error={errors.phone?.message} {...register("phone")} />
+                  <Field label="Fecha de nacimiento" type="date" error={errors.birthDate?.message} {...register("birthDate")} />
+                  <div className="grid grid-cols-2 gap-4">
+                    <Field label="Ciudad" type="text" placeholder="Santiago" error={errors.city?.message}    {...register("city")}    />
+                    <Field label="País"   type="text" placeholder="Chile"    error={errors.country?.message} {...register("country")} />
+                  </div>
+                  <Field as="textarea" label="Sobre mí" placeholder="Cuéntanos algo sobre tu estilo..." hint="Máximo 200 caracteres" error={errors.bio?.message} {...register("bio")} />
+                  <div className="flex gap-3 mt-2">
+                    <button type="button" onClick={handleCancel} className="flex-1 py-3 rounded-lg font-semibold text-sm border border-gray-300 text-gray-600 hover:bg-gray-50 transition-all">
+                      Cancelar
+                    </button>
+                    <button type="submit" disabled={isSubmitting || !isDirty} className="flex-1 py-3 rounded-lg font-semibold text-sm bg-black text-white hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                      {isSubmitting ? "Guardando..." : "Guardar cambios"}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+            </div>
           </div>
         </div>
       </div>
