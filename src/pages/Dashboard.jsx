@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import AppLayout from "../components/AppLayout";
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -11,14 +12,8 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
-      <header className="h-14 flex items-center justify-center border-b border-gray-200 bg-gray-100">
-        <button onClick={() => navigate("/")} className="text-xl font-black tracking-[0.25em] uppercase hover:opacity-60 transition-opacity">
-          DRESSED
-        </button>
-      </header>
-
-      <div className="flex-1 flex items-center justify-center p-4">
+    <AppLayout>
+      <div className="flex-1 flex items-center justify-center p-4 min-h-full">
         <div className="bg-white rounded-2xl shadow-xl p-10 flex flex-col items-center gap-4 max-w-sm w-full">
           <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center text-white text-2xl">👤</div>
           <h1 className="text-2xl font-bold">¡Hola, {user?.name}!</h1>
@@ -32,6 +27,6 @@ export default function Dashboard() {
           </button>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }

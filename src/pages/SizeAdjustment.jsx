@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "../context/AuthContext";
 import { sizeService } from "../services/sizeService";
+import AppLayout from "../components/AppLayout";
 
 const CLOTHING_SIZES = ["XS","S","M","L","XL","XXL","XXXL"];
 const SHOE_SIZES_CL  = ["35","36","37","38","39","40","41","42","43","44","45","46"];
@@ -51,12 +52,6 @@ function SizeSelector({ label, options, value, onChange, error }) {
   );
 }
 
-const Header = ({ navigate }) => (
-  <header className="h-14 flex items-center justify-center border-b border-gray-200 bg-gray-100">
-    <button onClick={() => navigate("/")} className="text-xl font-black tracking-[0.25em] uppercase hover:opacity-60 transition-opacity">DRESSED</button>
-  </header>
-);
-
 export default function SizeAdjustment() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -92,23 +87,20 @@ export default function SizeAdjustment() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex flex-col">
-        <Header navigate={navigate} />
-        <div className="flex-1 flex items-center justify-center">
+      <AppLayout>
+        <div className="flex-1 flex items-center justify-center min-h-full">
           <div className="flex flex-col items-center gap-3 text-gray-400">
             <div className="w-8 h-8 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
             <p className="text-sm">Cargando tallas...</p>
           </div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
-      <Header navigate={navigate} />
-
-      <div className="flex-1 flex items-center justify-center p-4">
+    <AppLayout>
+      <div className="flex items-center justify-center p-4 min-h-full">
         <div className="w-full max-w-lg rounded-2xl shadow-xl overflow-hidden bg-white text-black">
           <div className="flex border-b border-gray-200">
             <div className="flex-1 py-4 text-sm font-semibold text-black border-b-2 border-black text-center">Mis tallas</div>
@@ -145,7 +137,7 @@ export default function SizeAdjustment() {
           </form>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
 

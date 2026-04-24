@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import AppLayout from "../components/AppLayout";
 
 // ── Datos de tono de piel ────────────────────────────────────────────
 const SKIN_TONES = [
@@ -80,14 +81,6 @@ const myStyleService = {
 };
 
 // ── Header ────────────────────────────────────────────────────────────
-const Header = ({ navigate }) => (
-  <header className="h-14 flex items-center justify-center border-b border-gray-200 bg-gray-100">
-    <button onClick={() => navigate("/")} className="text-xl font-black tracking-[0.25em] uppercase hover:opacity-60 transition-opacity">
-      DRESSED
-    </button>
-  </header>
-);
-
 // ── Componente principal ──────────────────────────────────────────────
 export default function MyStyle() {
   const navigate = useNavigate();
@@ -142,23 +135,20 @@ export default function MyStyle() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex flex-col">
-        <Header navigate={navigate} />
-        <div className="flex-1 flex items-center justify-center">
+      <AppLayout>
+        <div className="flex-1 flex items-center justify-center min-h-full">
           <div className="flex flex-col items-center gap-3 text-gray-400">
             <div className="w-8 h-8 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
             <p className="text-sm">Cargando tu estilo...</p>
           </div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
-      <Header navigate={navigate} />
-
-      <div className="flex-1 flex items-center justify-center p-4">
+    <AppLayout>
+      <div className="flex items-center justify-center p-4 min-h-full">
         <div className="w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden bg-white text-black">
 
           <div className="flex border-b border-gray-200">
@@ -285,6 +275,6 @@ export default function MyStyle() {
           </div>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }

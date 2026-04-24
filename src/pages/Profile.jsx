@@ -8,6 +8,7 @@ import { profileService } from "../services/profileService";
 import { sizeService } from "../services/sizeService";
 import { calculateCompletion } from "../services/completionService";
 import ProfileCompletion from "../components/ProfileCompletion";
+import AppLayout from "../components/AppLayout";
 
 // ── Servicios mock locales (reemplaza con imports reales cuando existan) ─────
 let mockMyStyle = null;
@@ -144,30 +145,22 @@ export default function Profile() {
     }
   };
 
-  const Header = () => (
-    <header className="h-14 flex items-center justify-center border-b border-gray-200 bg-gray-100">
-      <button onClick={() => navigate("/")} className="text-xl font-black tracking-[0.25em] uppercase hover:opacity-60 transition-opacity">DRESSED</button>
-    </header>
-  );
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex flex-col">
-        <Header />
-        <div className="flex-1 flex items-center justify-center">
+      <AppLayout>
+        <div className="flex-1 flex items-center justify-center min-h-full">
           <div className="flex flex-col items-center gap-3 text-gray-400">
             <div className="w-8 h-8 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
             <p className="text-sm">Cargando perfil...</p>
           </div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
-      <Header />
-      <div className="flex-1 flex items-center justify-center p-4">
+    <AppLayout>
+      <div className="flex items-center justify-center p-4 min-h-full">
         <div className="w-full max-w-lg flex flex-col gap-4">
 
           {/* ── BARRA DE COMPLETITUD ── */}
@@ -258,6 +251,6 @@ export default function Profile() {
           </div>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
