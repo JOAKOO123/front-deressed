@@ -6,6 +6,7 @@ import { z } from "zod";
 import { useAuth } from "../context/AuthContext";
 import { sizeService } from "../services/sizeService";
 import AppLayout from "../components/AppLayout";
+import Spinner from "../components/Spinner";
 
 const CLOTHING_SIZES = ["XS","S","M","L","XL","XXL","XXXL"];
 const SHOE_SIZES_CL  = ["35","36","37","38","39","40","41","42","43","44","45","46"];
@@ -89,10 +90,7 @@ export default function SizeAdjustment() {
     return (
       <AppLayout>
         <div className="flex-1 flex items-center justify-center min-h-full">
-          <div className="flex flex-col items-center gap-3 text-gray-400">
-            <div className="w-8 h-8 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
-            <p className="text-sm">Cargando tallas...</p>
-          </div>
+          <Spinner text="Cargando tallas..." />
         </div>
       </AppLayout>
     );

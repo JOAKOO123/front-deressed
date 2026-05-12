@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import AppLayout from "../components/AppLayout";
+import Spinner from "../components/Spinner";
 import ProductCard from "../components/ProductCard";
 import { productService } from "../services/productService";
 
@@ -103,10 +104,7 @@ export default function Products() {
 
           {loading && (
             <div className="flex items-center justify-center py-20">
-              <div className="flex flex-col items-center gap-3 text-gray-400">
-                <div className="w-8 h-8 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
-                <p className="text-sm">Cargando productos...</p>
-              </div>
+              <Spinner text="Cargando productos..." />
             </div>
           )}
 

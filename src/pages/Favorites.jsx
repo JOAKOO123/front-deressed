@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "../components/AppLayout";
+import Spinner from "../components/Spinner";
 import OutfitCard from "../components/OutfitCard";
 import { favoritesService } from "../services/favoritesService";
 import { useAuth } from "../context/AuthContext";
@@ -36,8 +37,7 @@ export default function Favorites() {
 
         {loading && (
           <div className="flex flex-col items-center gap-3 text-gray-400 py-20">
-            <div className="w-8 h-8 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
-            <p className="text-sm">Cargando favoritos...</p>
+            <Spinner text="Cargando favoritos..." />
           </div>
         )}
 

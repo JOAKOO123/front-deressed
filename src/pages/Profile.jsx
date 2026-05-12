@@ -11,6 +11,7 @@ import { myStyleService } from "../services/myStyleService";
 import { preferencesService } from "../services/preferencesService";
 import ProfileCompletion from "../components/ProfileCompletion";
 import AppLayout from "../components/AppLayout";
+import Spinner from "../components/Spinner";
 
 const profileSchema = z.object({
   firstName: z.string().min(2, "Mínimo 2 caracteres").max(50, "Máximo 50 caracteres"),
@@ -143,10 +144,7 @@ export default function Profile() {
     return (
       <AppLayout>
         <div className="flex-1 flex items-center justify-center min-h-full">
-          <div className="flex flex-col items-center gap-3 text-gray-400">
-            <div className="w-8 h-8 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
-            <p className="text-sm">Cargando perfil...</p>
-          </div>
+          <Spinner text="Cargando perfil..." />
         </div>
       </AppLayout>
     );

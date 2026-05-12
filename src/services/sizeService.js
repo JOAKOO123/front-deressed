@@ -1,6 +1,5 @@
 // Servicio de tallas — reemplaza las simulaciones con tu backend real
-
-const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+import { delay } from "./utils";
 
 // Datos simulados en memoria (tu backend los persistirá)
 let mockSizes = null;

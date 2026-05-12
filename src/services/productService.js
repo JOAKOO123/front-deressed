@@ -1,6 +1,5 @@
 // Servicio de productos — reemplaza la simulación con tu backend real
-
-const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+import { delay } from "./utils";
 
 const MOCK_PRODUCTS = [
   { id: 1,  name: "Polera Oversize Blanca",   price: 14990, category: "superior",   image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=80",  link: "https://example.com/polera-oversize-blanca"  },

@@ -1,7 +1,6 @@
 // Servicio de preferencias de vestimenta
 // Extraído de ClothingPreferences.jsx
-
-const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+import { delay } from "./utils";
 
 let mockPreferences = null;
 

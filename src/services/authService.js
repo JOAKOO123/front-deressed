@@ -1,4 +1,5 @@
 // Simulación de API de auth — reemplaza con tu backend real
+import { delay } from "./utils";
 
 export const authService = {
   async login({ email, password }) {
@@ -62,5 +63,3 @@ export const authService = {
     return { success: true };
   },
 };
-
-const delay = (ms) => new Promise((res) => setTimeout(res, ms));

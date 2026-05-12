@@ -1,8 +1,7 @@
 // Servicio de outfits favoritos
 // Conecta con la tabla favorite_outfits (id, user_id, outfit_id, saved_at)
 // Reemplaza los mocks con tu backend real cuando esté disponible
-
-const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+import { delay } from "./utils";
 
 // Mock de favoritos en memoria
 let mockFavorites = [

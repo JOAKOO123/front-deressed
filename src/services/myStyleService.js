@@ -1,7 +1,6 @@
 // Servicio de estilo personal
 // Extraído de MyStyle.jsx y Profile.jsx — única fuente de verdad
-
-const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+import { delay } from "./utils";
 
 let mockMyStyle = null;
 
