@@ -6,7 +6,7 @@ const NAV_ITEMS = [
   { label: "My Style",             path: "/my-style"            },
   { label: "Clothing Preferences", path: "/clothing-preferences"},
   { label: "Size Adjustment",      path: "/size-adjustment"     },
-  { label: "Favorites",            path: null                   },
+  { label: "Favorites",            path: "/favorites"          },
   { label: "Fit Settings",         path: null                   },
 ];
 
