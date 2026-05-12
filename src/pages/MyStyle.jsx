@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import AppLayout from "../components/AppLayout";
+import { myStyleService } from "../services/myStyleService";
 
 // ── Datos de tono de piel ────────────────────────────────────────────
 const SKIN_TONES = [
@@ -71,14 +72,6 @@ const AVAILABLE_COLORS = [
   { id: "dorado",   label: "Dorado",   hex: "#FFD600" },
   { id: "plateado", label: "Plateado", hex: "#B0BEC5" },
 ];
-
-// ── Servicio mock ─────────────────────────────────────────────────────
-let mockMyStyle = null;
-const delay = (ms) => new Promise((r) => setTimeout(r, ms));
-const myStyleService = {
-  async get(token)        { await delay(500); return mockMyStyle || null; },
-  async save(token, data) { await delay(700); mockMyStyle = { ...data }; return mockMyStyle; },
-};
 
 // ── Header ────────────────────────────────────────────────────────────
 // ── Componente principal ──────────────────────────────────────────────

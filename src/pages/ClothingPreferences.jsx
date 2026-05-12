@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import AppLayout from "../components/AppLayout";
+import { preferencesService } from "../services/preferencesService";
 
 const CLOTHING_STYLES = [
   {
@@ -100,13 +101,6 @@ const OCCASIONS = [
   { id: "cita",         label: "Cita",                emoji: "💕" },
   { id: "playa",        label: "Playa / Verano",      emoji: "🏖️" },
 ];
-
-let mockPreferences = null;
-const delay = (ms) => new Promise((r) => setTimeout(r, ms));
-const preferencesService = {
-  async get(token)        { await delay(500); return mockPreferences || null; },
-  async save(token, data) { await delay(700); mockPreferences = { ...data }; return mockPreferences; },
-};
 
 export default function ClothingPreferences() {
   const navigate = useNavigate();

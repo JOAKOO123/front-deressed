@@ -7,16 +7,10 @@ import { useAuth } from "../context/AuthContext";
 import { profileService } from "../services/profileService";
 import { sizeService } from "../services/sizeService";
 import { calculateCompletion } from "../services/completionService";
+import { myStyleService } from "../services/myStyleService";
+import { preferencesService } from "../services/preferencesService";
 import ProfileCompletion from "../components/ProfileCompletion";
 import AppLayout from "../components/AppLayout";
-
-// ── Servicios mock locales (reemplaza con imports reales cuando existan) ─────
-let mockMyStyle = null;
-let mockPreferences = null;
-const delay = (ms) => new Promise((r) => setTimeout(r, ms));
-const myStyleService     = { async get(token) { await delay(400); return mockMyStyle || null; } };
-const preferencesService = { async get(token) { await delay(400); return mockPreferences || null; } };
-// ─────────────────────────────────────────────────────────────────────────────
 
 const profileSchema = z.object({
   firstName: z.string().min(2, "Mínimo 2 caracteres").max(50, "Máximo 50 caracteres"),
