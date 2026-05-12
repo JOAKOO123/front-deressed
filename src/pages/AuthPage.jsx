@@ -56,8 +56,10 @@ export default function AuthPage({ defaultTab = "login" }) {
   const onSubmit = async (data) => {
     setServerError("");
     try {
-      const result = isLogin ? await authService.login(data) : await authService.register(data);
-      login(result.user, result.token);
+      const result = isLogin
+        ? await authService.login(data.email, data.password)
+        : await authService.register(data.email, data.password);
+      login({ id: result.id, email: result.email }, result.token);
       navigate("/dashboard", { replace: true });
     } catch (err) {
       setServerError(err.message || "Ocurrió un error inesperado. Intenta de nuevo.");
