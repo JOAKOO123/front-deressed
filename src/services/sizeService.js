@@ -1,37 +1,14 @@
-// Servicio de tallas — reemplaza las simulaciones con tu backend real
-import { delay } from "./utils";
-
-// Datos simulados en memoria (tu backend los persistirá)
-let mockSizes = null;
+import { authApi } from "./api";
 
 export const sizeService = {
   async getSizes(token) {
-    await delay(600);
-    // Aquí va tu llamada real al backend, por ejemplo:
-    // const res = await fetch("/api/profile/sizes", {
-    //   headers: { Authorization: `Bearer ${token}` },
-    // });
-    // if (!res.ok) throw new Error("No se pudo cargar las tallas.");
-    // return res.json();
-
-    return mockSizes || null;
+    return authApi("/api/users/sizes", token);
   },
 
-  async updateSizes(token, sizesData) {
-    await delay(800);
-    // Aquí va tu llamada real al backend, por ejemplo:
-    // const res = await fetch("/api/profile/sizes", {
-    //   method: "PUT",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     Authorization: `Bearer ${token}`,
-    //   },
-    //   body: JSON.stringify(sizesData),
-    // });
-    // if (!res.ok) throw new Error("No se pudo guardar las tallas.");
-    // return res.json();
-
-    mockSizes = { ...sizesData };
-    return mockSizes;
+  async updateSizes(token, data) {
+    return authApi("/api/users/sizes", token, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
   },
 };

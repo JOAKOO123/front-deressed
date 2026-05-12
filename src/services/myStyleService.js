@@ -1,35 +1,14 @@
-// Servicio de estilo personal
-// Extraído de MyStyle.jsx y Profile.jsx — única fuente de verdad
-import { delay } from "./utils";
-
-let mockMyStyle = null;
+import { authApi } from "./api";
 
 export const myStyleService = {
   async get(token) {
-    await delay(500);
-    // const res = await fetch("/api/profile/style", {
-    //   headers: { Authorization: `Bearer ${token}` },
-    // });
-    // if (!res.ok) throw new Error("No se pudo cargar el estilo.");
-    // return res.json();
-
-    return mockMyStyle || null;
+    return authApi("/api/users/profile/styles", token);
   },
 
   async save(token, data) {
-    await delay(700);
-    // const res = await fetch("/api/profile/style", {
-    //   method: "PUT",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     Authorization: `Bearer ${token}`,
-    //   },
-    //   body: JSON.stringify(data),
-    // });
-    // if (!res.ok) throw new Error("No se pudo guardar el estilo.");
-    // return res.json();
-
-    mockMyStyle = { ...data };
-    return mockMyStyle;
+    return authApi("/api/users/profile/styles", token, {
+      method: "PUT",
+      body: JSON.stringify({ styles: data.styles || [] }),
+    });
   },
 };
