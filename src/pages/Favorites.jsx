@@ -4,7 +4,7 @@ import AppLayout from "../components/AppLayout";
 import Spinner from "../components/Spinner";
 import OutfitCard from "../components/OutfitCard";
 import { favoritesService } from "../services/favoritesService";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 
 export default function Favorites() {
   const { getToken } = useAuth();

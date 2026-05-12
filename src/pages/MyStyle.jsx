@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import AppLayout from "../components/AppLayout";
 import Spinner from "../components/Spinner";
 import { myStyleService } from "../services/myStyleService";
