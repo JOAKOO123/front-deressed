@@ -5,10 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "../context/AuthContext";
 import { profileService } from "../services/profileService";
-import { sizeService } from "../services/sizeService";
-import { calculateCompletion } from "../services/completionService";
-import { myStyleService } from "../services/myStyleService";
-import { preferencesService } from "../services/preferencesService";
+import { completionService } from "../services/completionService";
 import ProfileCompletion from "../components/ProfileCompletion";
 import AppLayout from "../components/AppLayout";
 import Spinner from "../components/Spinner";
@@ -81,34 +78,16 @@ export default function Profile() {
     if (!user) return;
     const token = getToken();
 
-    Promise.allSettled([
-      profileService.getProfile(token),
-      sizeService.getSizes(token),
-      myStyleService.get(token),
-      preferencesService.get(token),
-    ]).then(([profileRes, sizesRes, styleRes, prefsRes]) => {
-      const profile     = profileRes.status     === "fulfilled" ? profileRes.value     : null;
-      const sizes       = sizesRes.status       === "fulfilled" ? sizesRes.value       : null;
-      const myStyle     = styleRes.status       === "fulfilled" ? styleRes.value       : null;
-      const preferences = prefsRes.status       === "fulfilled" ? prefsRes.value       : null;
-      setCompletion(calculateCompletion(profile, sizes, myStyle, preferences));
-    }).finally(() => setCompletionLoading(false));
+    completionService.getCompleteness(token)
+      .then((data) => setCompletion(data))
+      .catch(() => {})
+      .finally(() => setCompletionLoading(false));
   }, [user, getToken]);
 
   // ── Recalcula completitud cuando el perfil se guarda ─────────────────
   const refreshCompletion = async () => {
-    const token = getToken();
-    const [profileRes, sizesRes, styleRes, prefsRes] = await Promise.allSettled([
-      profileService.getProfile(token),
-      sizeService.getSizes(token),
-      myStyleService.get(token),
-      preferencesService.get(token),
-    ]);
-    const profile     = profileRes.status === "fulfilled" ? profileRes.value : null;
-    const sizes       = sizesRes.status   === "fulfilled" ? sizesRes.value   : null;
-    const myStyle     = styleRes.status   === "fulfilled" ? styleRes.value   : null;
-    const preferences = prefsRes.status   === "fulfilled" ? prefsRes.value   : null;
-    setCompletion(calculateCompletion(profile, sizes, myStyle, preferences));
+    const data = await completionService.getCompleteness(getToken());
+    setCompletion(data);
   };
 
   const handleEdit = () => {
