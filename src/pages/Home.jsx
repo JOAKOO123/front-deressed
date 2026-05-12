@@ -1,17 +1,14 @@
 import { useEffect, useState } from "react";
 import AppLayout from "../components/AppLayout";
 import OutfitCard from "../components/OutfitCard";
-import { getOutfits } from "../services/api";
+import { authApi } from "../services/api";
 
 export default function Home() {
   const [outfits, setOutfits] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const data = await getOutfits();
-      setOutfits(data);
-    };
-    fetchData();
+    // TODO: conectar al endpoint real de outfits cuando esté disponible
+    setOutfits([]);
   }, []);
 
   return (
