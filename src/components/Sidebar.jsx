@@ -2,12 +2,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 const NAV_ITEMS = [
-  { label: "Ropa",                 path: "/products"            },
-  { label: "My Style",             path: "/my-style"            },
-  { label: "Clothing Preferences", path: "/clothing-preferences"},
-  { label: "Size Adjustment",      path: "/size-adjustment"     },
-  { label: "Favorites",            path: "/favorites"          },
-  { label: "Fit Settings",         path: null                   },
+  { label: "Ropa", path: "/products" },
+  { label: "Mi Estilo", path: "/my-style" },
+  { label: "Preferencias", path: "/clothing-preferences" },
+  { label: "Ajuste de Tallas", path: "/size-adjustment" },
+  { label: "Favoritos", path: "/favorites" },
 ];
 
 export default function Sidebar() {
