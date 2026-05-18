@@ -1,12 +1,12 @@
-import { authApi } from "./api";
+import { api } from "./api";
 
 export const sizeService = {
-  async getSizes(token) {
-    return authApi("/api/users/sizes", token);
+  async getSizes() {
+    return api("/api/users/sizes");
   },
 
-  async updateSizes(token, data) {
-    return authApi("/api/users/sizes", token, {
+  async updateSizes(data) {
+    return api("/api/users/sizes", {
       method: "PUT",
       body: JSON.stringify(data),
     });

@@ -77,7 +77,7 @@ function MeasureField({ label, hint, error, ...props }) {
 
 export default function SizeAdjustment() {
   const navigate        = useNavigate();
-  const { user, getToken } = useAuth();
+  const { user } = useAuth();
   const [loading, setLoading]               = useState(true);
   const [serverError, setServerError]       = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -103,10 +103,9 @@ export default function SizeAdjustment() {
 
   useEffect(() => {
     if (!user) { navigate("/login", { replace: true }); return; }
-    const token = getToken();
     Promise.all([
-      sizeService.getSizes(token),
-      proportionsService.getProportions(token),
+      sizeService.getSizes(),
+      proportionsService.getProportions(),
     ])
       .then(([sizes, measures]) => {
         if (sizes)   resetSizes(sizes);
@@ -114,12 +113,12 @@ export default function SizeAdjustment() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [user, navigate, getToken, resetSizes, resetMeasures]);
+  }, [user, navigate, resetSizes, resetMeasures]);
 
   const onSizeSubmit = async (data) => {
     setServerError(""); setSuccessMessage("");
     try {
-      await sizeService.updateSizes(getToken(), data);
+      await sizeService.updateSizes(data);
       setSuccessMessage("Tallas guardadas correctamente");
       setTimeout(() => setSuccessMessage(""), 3500);
     } catch (err) {
@@ -130,7 +129,7 @@ export default function SizeAdjustment() {
   const onMeasureSubmit = async (data) => {
     setServerError(""); setSuccessMessage("");
     try {
-      await proportionsService.updateProportions(getToken(), data);
+      await proportionsService.updateProportions(data);
       setSuccessMessage("Medidas guardadas correctamente");
       setTimeout(() => setSuccessMessage(""), 3500);
     } catch (err) {

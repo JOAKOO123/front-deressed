@@ -1,9 +1,14 @@
 import { api } from "./api";
 
 export const proportionsService = {
-  getProportions: (token) =>
-    api.get("/api/users/proportions", token),
+  async getProportions() {
+    return api("/api/users/proportions");
+  },
 
-  updateProportions: (token, data) =>
-    api.put("/api/users/proportions", data, token),
+  async updateProportions(data) {
+    return api("/api/users/proportions", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
 };

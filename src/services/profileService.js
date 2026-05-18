@@ -1,25 +1,25 @@
-import { authApi } from "./api";
+import { api } from "./api";
 
 export const profileService = {
-  async getProfile(token) {
-    return authApi("/api/users/profile", token);
+  async getProfile() {
+    return api("/api/users/profile");
   },
 
-  async updateProfile(token, data) {
-    return authApi("/api/users/profile", token, {
+  async updateProfile(data) {
+    return api("/api/users/profile", {
       method: "PUT",
       body: JSON.stringify(data),
     });
   },
 
-  async updateSkin(token, data) {
-    return authApi("/api/users/profile/skin", token, {
+  async updateSkin(data) {
+    return api("/api/users/profile/skin", {
       method: "PUT",
       body: JSON.stringify(data),
     });
   },
 
-  async getCompleteness(token) {
-    return authApi("/api/users/profile/completeness", token);
+  async getCompleteness() {
+    return api("/api/users/profile/completeness");
   },
 };

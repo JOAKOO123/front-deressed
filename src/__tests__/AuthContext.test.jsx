@@ -1,15 +1,8 @@
 import React from "react";
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, act } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, act } from "@testing-library/react";
 import { AuthProvider } from "../context/AuthContext";
 import { useAuth } from "../hooks/useAuth";
-
-// ── Helper: genera JWT con exp ────────────────────────────────────────
-function makeJwt(expOffsetSeconds) {
-  const exp = Math.floor(Date.now() / 1000) + expOffsetSeconds;
-  const payload = btoa(JSON.stringify({ exp }));
-  return `header.${payload}.signature`;
-}
 
 // ── Componente auxiliar para leer el contexto en tests ────────────────
 function AuthConsumer({ onValue }) {
@@ -25,6 +18,36 @@ function renderWithAuth(onValue) {
     </AuthProvider>
   );
 }
+
+beforeEach(() => {
+  vi.stubGlobal("fetch", vi.fn(async (url) => {
+    if (String(url).includes("/api/auth/me")) {
+      return {
+        ok: false,
+        status: 401,
+        json: async () => ({ error: "Unauthorized" }),
+      };
+    }
+
+    if (String(url).includes("/api/auth/logout")) {
+      return {
+        ok: true,
+        status: 204,
+        json: async () => ({}),
+      };
+    }
+
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({ id: 1, email: "test@test.com" }),
+    };
+  }));
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 // ── Tests ─────────────────────────────────────────────────────────────
 describe("AuthContext", () => {
@@ -44,11 +67,10 @@ describe("AuthContext", () => {
     });
 
     await act(async () => {
-      captured.login({ id: 1, name: "Test", email: "test@test.com" }, "token_abc");
+      captured.login({ id: 1, name: "Test", email: "test@test.com" });
     });
 
     expect(captured.user).toMatchObject({ id: 1, name: "Test" });
-    expect(localStorage.getItem("auth_token")).toBe("token_abc");
     expect(JSON.parse(localStorage.getItem("auth_user"))).toMatchObject({ name: "Test" });
   });
 
@@ -59,21 +81,24 @@ describe("AuthContext", () => {
     });
 
     await act(async () => {
-      captured.login({ id: 1, name: "Test", email: "t@t.com" }, "token_abc");
+      captured.login({ id: 1, name: "Test", email: "t@t.com" });
     });
     await act(async () => {
       captured.logout();
     });
 
     expect(captured.user).toBeNull();
-    expect(localStorage.getItem("auth_token")).toBeNull();
     expect(localStorage.getItem("auth_user")).toBeNull();
   });
 
-  it("restaura la sesión desde localStorage si el token no está expirado", async () => {
-    const token = makeJwt(3600); // expira en 1 hora
-    localStorage.setItem("auth_token", token);
+  it("restaura la sesión desde localStorage si existe usuario guardado", async () => {
     localStorage.setItem("auth_user", JSON.stringify({ id: 2, name: "Guardado" }));
+
+    globalThis.fetch.mockImplementationOnce(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ id: 2, email: "guardado@test.com", name: "Guardado" }),
+    }));
 
     let captured;
     await act(async () => {
@@ -83,9 +108,7 @@ describe("AuthContext", () => {
     expect(captured.user).toMatchObject({ id: 2, name: "Guardado" });
   });
 
-  it("limpia la sesión si el token JWT está expirado", async () => {
-    const expiredToken = makeJwt(-100); // expiró hace 100 segundos
-    localStorage.setItem("auth_token", expiredToken);
+  it("limpia la sesión si el backend rechaza la cookie", async () => {
     localStorage.setItem("auth_user", JSON.stringify({ id: 3, name: "Viejo" }));
 
     let captured;
@@ -94,23 +117,6 @@ describe("AuthContext", () => {
     });
 
     expect(captured.user).toBeNull();
-    expect(localStorage.getItem("auth_token")).toBeNull();
-  });
-
-  it("getToken devuelve el token almacenado", async () => {
-    localStorage.setItem("auth_token", "mi_token_123");
-    localStorage.setItem("auth_user", JSON.stringify({ id: 1, name: "x" }));
-
-    // Token sin exp válido para esta prueba
-    const tokenSinExp = `header.${btoa(JSON.stringify({}))}.sig`;
-    localStorage.setItem("auth_token", tokenSinExp);
-
-    let captured;
-    await act(async () => {
-      renderWithAuth((v) => { captured = v; });
-    });
-
-    expect(captured.getToken()).toBe(tokenSinExp);
   });
 
   it("updateUserProfile fusiona los campos nuevos con los existentes", async () => {
@@ -120,7 +126,7 @@ describe("AuthContext", () => {
     });
 
     await act(async () => {
-      captured.login({ id: 1, name: "Juan", email: "j@j.com" }, "tok");
+      captured.login({ id: 1, name: "Juan", email: "j@j.com" });
     });
     await act(async () => {
       captured.updateUserProfile({ name: "Juan Pérez" });
@@ -137,7 +143,7 @@ describe("AuthContext", () => {
     });
 
     await act(async () => {
-      captured.login({ id: 1, name: "Juan", email: "j@j.com" }, "tok");
+      captured.login({ id: 1, name: "Juan", email: "j@j.com" });
     });
     await act(async () => {
       captured.updateUserProfile({ name: "Juan Actualizado" });

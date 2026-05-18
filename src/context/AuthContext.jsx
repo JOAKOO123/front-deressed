@@ -1,23 +1,16 @@
 import { createContext, useContext, useState, useEffect } from "react"
-import { profileService } from "../services/profileService"
+import { api } from "../services/api"
 
 export const AuthContext = createContext(null)
 
-const TOKEN_KEY = "auth_token"
 const USER_KEY  = "auth_user"
 
-function saveSession(token, userData) {
-  localStorage.setItem(TOKEN_KEY, token)
+function saveUser(userData) {
   localStorage.setItem(USER_KEY, JSON.stringify(userData))
 }
 
-function clearSession() {
-  localStorage.removeItem(TOKEN_KEY)
+function clearUser() {
   localStorage.removeItem(USER_KEY)
-}
-
-function getStoredToken() {
-  return localStorage.getItem(TOKEN_KEY)
 }
 
 function getStoredUser() {
@@ -46,49 +39,41 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = getStoredToken()
     const savedUser = getStoredUser()
 
-    if (token && savedUser) {
-      if (isTokenExpired(token)) {
-        clearSession()
-      } else {
-        setUser(savedUser)
-        // Fetch perfil para obtener el nombre actualizado
-        profileService.getProfile(token)
-          .then((profile) => {
-            if (profile?.name) {
-              const updated = { ...savedUser, name: profile.name }
-              localStorage.setItem(USER_KEY, JSON.stringify(updated))
-              setUser(updated)
-            }
-          })
-          .catch(() => {})
-      }
+    if (savedUser) {
+      setUser(savedUser)
     }
-    setLoading(false)
+
+    api("/api/auth/me")
+      .then((data) => {
+        if (data) {
+          const updated = { id: data.id, email: data.email, name: data.name ?? savedUser?.name }
+          saveUser(updated)
+          setUser(updated)
+        }
+      })
+      .catch(() => {
+        clearUser()
+        setUser(null)
+      })
+      .finally(() => setLoading(false))
   }, [])
 
-  const login = async (userData, token) => {
-    saveSession(token, userData)
+  const login = async (userData) => {
+    saveUser(userData)
     setUser(userData)
-
-    // Fetch perfil para obtener nombre después del login
-    try {
-      const profile = await profileService.getProfile(token)
-      if (profile?.name) {
-        const updated = { ...userData, name: profile.name }
-        saveSession(token, updated)
-        setUser(updated)
-      }
-    } catch {
-      // Si falla el fetch del perfil, el usuario sigue logueado
-    }
   }
 
-  const logout = () => {
-    clearSession()
-    setUser(null)
+  const logout = async () => {
+    try {
+      await api("/api/auth/logout", { method: "POST" })
+    } catch {
+      // Ignorar errores del logout en el BFF
+    } finally {
+      clearUser()
+      setUser(null)
+    }
   }
 
   const updateUserProfile = (updatedFields) => {
@@ -99,10 +84,8 @@ export function AuthProvider({ children }) {
     })
   }
 
-  const getToken = () => getStoredToken()
-
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, updateUserProfile, getToken }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUserProfile }}>
       {children}
     </AuthContext.Provider>
   )

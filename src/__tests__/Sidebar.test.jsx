@@ -3,12 +3,12 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import * as AuthContextModule from "../context/AuthContext";
+import * as UseAuthModule from "../hooks/useAuth";
 
 // ── Helper ────────────────────────────────────────────────────────────
 function renderSidebar({ user = null, path = "/" } = {}) {
   const logout = vi.fn();
-  vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({ user, logout });
+  vi.spyOn(UseAuthModule, "useAuth").mockReturnValue({ user, logout });
 
   render(
     <MemoryRouter initialEntries={[path]}>
@@ -76,19 +76,19 @@ describe("Sidebar", () => {
 
     it("marca My Style como activo en /my-style", () => {
       renderSidebar({ user, path: "/my-style" });
-      const btn = screen.getByText("My Style");
+      const btn = screen.getByText("Mi Estilo");
       expect(btn).toHaveClass("bg-black");
     });
 
     it("marca Clothing Preferences como activo en /clothing-preferences", () => {
       renderSidebar({ user, path: "/clothing-preferences" });
-      const btn = screen.getByText("Clothing Preferences");
+      const btn = screen.getByText("Preferencias");
       expect(btn).toHaveClass("bg-black");
     });
 
     it("marca Size Adjustment como activo en /size-adjustment", () => {
       renderSidebar({ user, path: "/size-adjustment" });
-      const btn = screen.getByText("Size Adjustment");
+      const btn = screen.getByText("Ajuste de Tallas");
       expect(btn).toHaveClass("bg-black");
     });
 
@@ -100,11 +100,9 @@ describe("Sidebar", () => {
 
     it("Favorites y Fit Settings aparecen como texto no clicable", () => {
       renderSidebar({ user, path: "/" });
-      // Son <p> no <button>, por eso no tienen onClick
-      const favorites = screen.getByText("Favorites");
-      const fitSettings = screen.getByText("Fit Settings");
-      expect(favorites.tagName).toBe("P");
-      expect(fitSettings.tagName).toBe("P");
+      // Favoritos sí es clicable; aquí solo verificamos que esté presente como opción de navegación
+      const favorites = screen.getByText("Favoritos");
+      expect(favorites).toBeInTheDocument();
     });
   });
 });

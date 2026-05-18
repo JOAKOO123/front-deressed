@@ -10,7 +10,7 @@ const dominiosPermitidos = [
   "gmail.com","googlemail.com","hotmail.com","hotmail.cl","hotmail.es",
   "outlook.com","outlook.cl","outlook.es","live.com","live.cl","msn.com",
   "yahoo.com","yahoo.es","yahoo.cl","icloud.com","me.com","mac.com",
-  "protonmail.com","proton.me","zoho.com","duocuc.cl","uc.cl","usach.cl",
+  "protonmail.com","proton.me","zoho.com","duoc.cl","duocuc.cl","uc.cl","usach.cl",
   "uchile.cl","utem.cl","udd.cl","udp.cl","uai.cl","pucv.cl","uv.cl","ufro.cl",
 ];
 
@@ -59,7 +59,7 @@ export default function AuthPage({ defaultTab = "login" }) {
       const result = isLogin
         ? await authService.login(data.email, data.password)
         : await authService.register(data.email, data.password);
-      login({ id: result.id, email: result.email }, result.token);
+      await login({ id: result?.id, email: result?.email || data.email });
       navigate("/dashboard", { replace: true });
     } catch (err) {
       setServerError(err.message || "Ocurrió un error inesperado. Intenta de nuevo.");
@@ -68,7 +68,6 @@ export default function AuthPage({ defaultTab = "login" }) {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* DRESSED arriba */}
       <header className="h-14 flex items-center justify-center border-b border-gray-200 bg-gray-100">
         <button onClick={() => navigate("/")} className="text-xl font-black tracking-[0.25em] uppercase hover:opacity-60 transition-opacity">
           DRESSED
@@ -77,7 +76,6 @@ export default function AuthPage({ defaultTab = "login" }) {
 
       <div className="flex-1 flex items-center justify-center p-4">
         <div className={`w-full max-w-md rounded-2xl shadow-xl overflow-hidden transition-colors duration-300 ${isLogin ? "bg-black text-white" : "bg-white text-black"}`}>
-          {/* Tabs */}
           <div className={`flex border-b ${isLogin ? "border-gray-800" : "border-gray-200"}`}>
             <button onClick={() => navigate("/login")} className={`flex-1 py-4 text-sm font-semibold transition-colors ${isLogin ? "text-white border-b-2 border-white" : "text-gray-400 hover:text-gray-600"}`}>
               Iniciar sesión

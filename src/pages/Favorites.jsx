@@ -4,10 +4,8 @@ import AppLayout from "../components/AppLayout";
 import Spinner from "../components/Spinner";
 import OutfitCard from "../components/OutfitCard";
 import { favoritesService } from "../services/favoritesService";
-import { useAuth } from "../hooks/useAuth";
 
 export default function Favorites() {
-  const { getToken } = useAuth();
   const navigate = useNavigate();
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,15 +13,15 @@ export default function Favorites() {
 
   useEffect(() => {
     favoritesService
-      .getFavorites(getToken())
+      .getFavorites()
       .then((data) => setFavorites(data))
       .catch(() => setError("No se pudieron cargar los favoritos. Intenta de nuevo."))
       .finally(() => setLoading(false));
-  }, [getToken]);
+  }, []);
 
   const handleRemove = async (favoriteId) => {
     try {
-      await favoritesService.removeFavorite(getToken(), favoriteId);
+      await favoritesService.removeFavorite(favoriteId);
       setFavorites((prev) => prev.filter((f) => f.id !== favoriteId));
     } catch {
       setError("No se pudo eliminar el favorito.");

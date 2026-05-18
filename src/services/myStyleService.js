@@ -1,14 +1,14 @@
-import { authApi } from "./api";
+import { api } from "./api";
 
 export const myStyleService = {
-  async get(token) {
-    return authApi("/api/users/profile/styles", token);
+  async get() {
+    return api("/api/users/profile/styles");
   },
 
-  async save(token, data) {
-    return authApi("/api/users/profile/styles", token, {
+  async save(styles) {
+    return api("/api/users/profile/styles", {
       method: "PUT",
-      body: JSON.stringify({ styles: data.styles || [] }),
+      body: JSON.stringify({ styles }),
     });
   },
 };

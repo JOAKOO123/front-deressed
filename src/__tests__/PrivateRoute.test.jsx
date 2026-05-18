@@ -3,11 +3,11 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import PrivateRoute from "../components/PrivateRoute";
-import * as AuthContextModule from "../context/AuthContext";
+import * as UseAuthModule from "../hooks/useAuth";
 
 // ── Helper: monta PrivateRoute con un contexto de auth controlado ─────
 function renderPrivateRoute({ user = null, loading = false } = {}) {
-  vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({ user, loading });
+  vi.spyOn(UseAuthModule, "useAuth").mockReturnValue({ user, loading });
 
   render(
     <MemoryRouter initialEntries={["/dashboard"]}>

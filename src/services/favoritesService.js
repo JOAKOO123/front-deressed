@@ -32,7 +32,7 @@ let mockFavorites = [
 ];
 
 export const favoritesService = {
-  async getFavorites(token) {
+  async getFavorites() {
     await delay(700);
     // Llamada real al backend:
     // const res = await fetch("/api/favorites", {
@@ -44,7 +44,7 @@ export const favoritesService = {
     return mockFavorites;
   },
 
-  async removeFavorite(token, favoriteId) {
+  async removeFavorite(favoriteId) {
     await delay(500);
     // Llamada real al backend:
     // const res = await fetch(`/api/favorites/${favoriteId}`, {

@@ -6,7 +6,7 @@ import { z } from "zod";
 import { authService } from "../services/authService";
 
 const passwordValidation = z.string()
-  .min(6, "Mínimo 6 caracteres")
+  .min(8, "Mínimo 8 caracteres")
   .refine((val) => /[A-Z]/.test(val), "Debe tener al menos una mayúscula")
   .refine((val) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(val), "Debe tener al menos un carácter especial (!@#$%...)");
 
@@ -61,7 +61,7 @@ export default function ResetPassword() {
           <form onSubmit={handleSubmit(onSubmit)} className="p-8 flex flex-col gap-5">
             <div className="flex flex-col gap-1">
               <h1 className="text-2xl font-bold">Nueva contraseña</h1>
-              <p className="text-sm text-gray-500">Debe tener al menos 6 caracteres, una mayúscula y un carácter especial.</p>
+              <p className="text-sm text-gray-500">Debe tener al menos 8 caracteres, una mayúscula y un carácter especial.</p>
             </div>
             {!token && <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-sm text-red-500 flex items-center gap-2"><span>✕</span>El enlace de recuperación es inválido o ha expirado.</div>}
             {serverError && <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-sm text-red-500 flex items-center gap-2"><span>✕</span>{serverError}</div>}
