@@ -1,15 +1,15 @@
 const CATEGORY_LABELS = {
-  superior:  "Superior",
-  inferior:  "Inferior",
-  zapatilla: "Zapatilla",
-  accesorio: "Accesorio",
+  JEANS:      "Jeans",
+  POLERAS:    "Poleras",
+  ZAPATILLAS: "Zapatillas",
+  ACCESORIOS: "Accesorios",
 };
 
 const CATEGORY_COLORS = {
-  superior:  "bg-blue-50 text-blue-600",
-  inferior:  "bg-purple-50 text-purple-600",
-  zapatilla: "bg-orange-50 text-orange-600",
-  accesorio: "bg-green-50 text-green-600",
+  JEANS:      "bg-blue-50 text-blue-600",
+  POLERAS:    "bg-purple-50 text-purple-600",
+  ZAPATILLAS: "bg-orange-50 text-orange-600",
+  ACCESORIOS: "bg-green-50 text-green-600",
 };
 
 export default function ProductCard({ product }) {

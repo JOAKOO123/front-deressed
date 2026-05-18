@@ -5,11 +5,11 @@ import ProductCard from "../components/ProductCard";
 import { productService } from "../services/productService";
 
 const CATEGORIES = [
-  { value: "all",       label: "Todos"      },
-  { value: "superior",  label: "Superior"   },
-  { value: "inferior",  label: "Inferior"   },
-  { value: "zapatilla", label: "Zapatillas" },
-  { value: "accesorio", label: "Accesorios" },
+  { value: "all",    label: "Todos"   },
+  { value: "JEANS",  label: "Jeans"   },
+  { value: "POLERAS", label: "Poleras" },
+  { value: "ZAPATILLAS", label: "Zapatillas" },
+  { value: "ACCESORIOS", label: "Accesorios" },
 ];
 
 const PRICE_MAX = 100000;
