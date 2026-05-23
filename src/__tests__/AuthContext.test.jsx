@@ -4,6 +4,8 @@ import { render, act } from "@testing-library/react";
 import { AuthProvider } from "../context/AuthContext";
 import { useAuth } from "../hooks/useAuth";
 
+const USER_KEY = "dressed_user_display";
+
 // ── Componente auxiliar para leer el contexto en tests ────────────────
 function AuthConsumer({ onValue }) {
   const auth = useAuth();
@@ -20,6 +22,7 @@ function renderWithAuth(onValue) {
 }
 
 beforeEach(() => {
+  localStorage.clear();
   vi.stubGlobal("fetch", vi.fn(async (url) => {
     if (String(url).includes("/api/auth/me")) {
       return {
@@ -71,7 +74,7 @@ describe("AuthContext", () => {
     });
 
     expect(captured.user).toMatchObject({ id: 1, name: "Test" });
-    expect(JSON.parse(localStorage.getItem("auth_user"))).toMatchObject({ name: "Test" });
+    expect(JSON.parse(localStorage.getItem(USER_KEY))).toMatchObject({ name: "Test" });
   });
 
   it("logout limpia el usuario y localStorage", async () => {
@@ -88,11 +91,11 @@ describe("AuthContext", () => {
     });
 
     expect(captured.user).toBeNull();
-    expect(localStorage.getItem("auth_user")).toBeNull();
+    expect(localStorage.getItem(USER_KEY)).toBeNull();
   });
 
-  it("restaura la sesión desde localStorage si existe usuario guardado", async () => {
-    localStorage.setItem("auth_user", JSON.stringify({ id: 2, name: "Guardado" }));
+  it("hidrata el display guardado mientras valida la cookie", async () => {
+    localStorage.setItem(USER_KEY, JSON.stringify({ id: 2, name: "Guardado", email: "guardado@test.com" }));
 
     globalThis.fetch.mockImplementationOnce(async () => ({
       ok: true,
@@ -109,7 +112,7 @@ describe("AuthContext", () => {
   });
 
   it("limpia la sesión si el backend rechaza la cookie", async () => {
-    localStorage.setItem("auth_user", JSON.stringify({ id: 3, name: "Viejo" }));
+    localStorage.setItem(USER_KEY, JSON.stringify({ id: 3, name: "Viejo" }));
 
     let captured;
     await act(async () => {
@@ -149,7 +152,7 @@ describe("AuthContext", () => {
       captured.updateUserProfile({ name: "Juan Actualizado" });
     });
 
-    const stored = JSON.parse(localStorage.getItem("auth_user"));
+    const stored = JSON.parse(localStorage.getItem(USER_KEY));
     expect(stored.name).toBe("Juan Actualizado");
   });
 });

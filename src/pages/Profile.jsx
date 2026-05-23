@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "../hooks/useAuth";
 import { profileService } from "../services/profileService";
-import { completionService } from "../services/completionService";
 import ProfileCompletion from "../components/ProfileCompletion";
 import AppLayout from "../components/AppLayout";
 import Spinner from "../components/Spinner";
@@ -127,14 +126,14 @@ export default function Profile() {
 
   useEffect(() => {
     if (!user) return;
-    completionService.getCompleteness()
+    profileService.getCompleteness()
       .then((data) => setCompletion(adaptCompletion(data)))
       .catch(() => {})
       .finally(() => setCompletionLoading(false));
   }, [user]);
 
   const refreshCompletion = async () => {
-    const data = await completionService.getCompleteness();
+    const data = await profileService.getCompleteness();
     setCompletion(adaptCompletion(data));
   };
 

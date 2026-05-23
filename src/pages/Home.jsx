@@ -1,15 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import AppLayout from "../components/AppLayout";
 import OutfitCard from "../components/OutfitCard";
-import { authApi } from "../services/api";
 
 export default function Home() {
   const [outfits, setOutfits] = useState([]);
-
-  useEffect(() => {
-    // TODO: conectar al endpoint real de outfits cuando esté disponible
-    setOutfits([]);
-  }, []);
 
   return (
     <AppLayout>

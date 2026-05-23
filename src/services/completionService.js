@@ -1,5 +1,3 @@
-import { api } from "./api";
-
 const SECTION_DEFINITIONS = [
   {
     id: "profile",
@@ -87,9 +85,3 @@ export function calculateCompletion(profile, sizes, myStyle, preferences) {
 
   return { sections, percent, doneFields, totalFields };
 }
-
-export const completionService = {
-  async getCompleteness() {
-    return api("/api/users/profile/completeness");
-  },
-};

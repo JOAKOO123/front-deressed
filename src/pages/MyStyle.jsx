@@ -6,21 +6,41 @@ import Spinner from "../components/Spinner";
 import { profileService } from "../services/profileService";
 
 const SKIN_TONES = [
-  { id: "muy_claro",    label: "Muy claro",    hex: "#FDDBB4", desc: "Piel muy clara, se quema fácilmente" },
-  { id: "claro",        label: "Claro",        hex: "#F5C18A", desc: "Piel clara con algo de rosado" },
-  { id: "medio_claro",  label: "Medio claro",  hex: "#E8A876", desc: "Piel media con tono cálido" },
-  { id: "medio",        label: "Medio",        hex: "#C68642", desc: "Piel olivácea o castaña media" },
-  { id: "medio_oscuro", label: "Medio oscuro", hex: "#8D5524", desc: "Piel castaña oscura o marrón" },
-  { id: "oscuro",       label: "Oscuro",       hex: "#4A2912", desc: "Piel muy oscura o ébano" },
+  { id: "very_light",   label: "Muy claro",    hex: "#FDDBB4", desc: "Piel muy clara, se quema fácilmente" },
+  { id: "light",        label: "Claro",        hex: "#F5C18A", desc: "Piel clara con algo de rosado" },
+  { id: "medium_light", label: "Medio claro",  hex: "#E8A876", desc: "Piel media con tono cálido" },
+  { id: "medium",       label: "Medio",        hex: "#C68642", desc: "Piel olivácea o castaña media" },
+  { id: "medium_dark",  label: "Medio oscuro", hex: "#8D5524", desc: "Piel castaña oscura o marrón" },
+  { id: "dark",         label: "Oscuro",       hex: "#4A2912", desc: "Piel muy oscura o ébano" },
 ];
 
 const COLOR_PALETTES = [
-  { id: "primavera", label: "Primavera", subtitle: "Cálido y claro",   description: "Colores frescos y luminosos que realzan pieles cálidas y claras.", colors: ["#FFD700","#FF8C69","#98FB98","#87CEEB","#FFB347","#DDA0DD","#F0E68C","#FF6B6B"] },
-  { id: "verano",    label: "Verano",    subtitle: "Frío y claro",     description: "Tonos suaves y empolvados ideales para pieles frías y claras.",    colors: ["#B0C4DE","#DDA0DD","#F08080","#98D8C8","#C3B1E1","#FFB6C1","#A8D8EA","#E8D5B7"] },
-  { id: "otono",     label: "Otoño",     subtitle: "Cálido y profundo",description: "Tonos tierra y ricos que favorecen pieles cálidas y oscuras.",     colors: ["#8B4513","#CD853F","#D2691E","#556B2F","#B8860B","#A0522D","#6B8E23","#8B0000"] },
-  { id: "invierno",  label: "Invierno",  subtitle: "Frío y profundo",  description: "Colores intensos y contrastantes para pieles frías y oscuras.",    colors: ["#000080","#8B0000","#006400","#4B0082","#2F4F4F","#800000","#191970","#FFFFFF"] },
-  { id: "neutro",    label: "Neutro",    subtitle: "Versátil",         description: "Paleta equilibrada que funciona con cualquier tono de piel.",       colors: ["#808080","#A9A9A9","#D3D3D3","#4A4A4A","#C0A882","#8B7355","#F5F5DC","#2C2C2C"] },
+  { id: "spring",  label: "Primavera", subtitle: "Cálido y claro",   description: "Colores frescos y luminosos que realzan pieles cálidas y claras.", colors: ["#FFD700","#FF8C69","#98FB98","#87CEEB","#FFB347","#DDA0DD","#F0E68C","#FF6B6B"] },
+  { id: "summer",  label: "Verano",    subtitle: "Frío y claro",     description: "Tonos suaves y empolvados ideales para pieles frías y claras.",    colors: ["#B0C4DE","#DDA0DD","#F08080","#98D8C8","#C3B1E1","#FFB6C1","#A8D8EA","#E8D5B7"] },
+  { id: "autumn",  label: "Otoño",     subtitle: "Cálido y profundo",description: "Tonos tierra y ricos que favorecen pieles cálidas y oscuras.",     colors: ["#8B4513","#CD853F","#D2691E","#556B2F","#B8860B","#A0522D","#6B8E23","#8B0000"] },
+  { id: "winter",  label: "Invierno",  subtitle: "Frío y profundo",  description: "Colores intensos y contrastantes para pieles frías y oscuras.",    colors: ["#000080","#8B0000","#006400","#4B0082","#2F4F4F","#800000","#191970","#FFFFFF"] },
+  { id: "neutral", label: "Neutro",    subtitle: "Versátil",         description: "Paleta equilibrada que funciona con cualquier tono de piel.",       colors: ["#808080","#A9A9A9","#D3D3D3","#4A4A4A","#C0A882","#8B7355","#F5F5DC","#2C2C2C"] },
 ];
+
+const SKIN_TONE_LEGACY_MAP = {
+  muy_claro: "very_light",
+  claro: "light",
+  medio_claro: "medium_light",
+  medio: "medium",
+  medio_oscuro: "medium_dark",
+  oscuro: "dark",
+};
+
+const COLOR_PALETTE_LEGACY_MAP = {
+  primavera: "spring",
+  verano: "summer",
+  otono: "autumn",
+  invierno: "winter",
+  neutro: "neutral",
+};
+
+const normalizeSkinTone = (value) => SKIN_TONE_LEGACY_MAP[value] || value || "";
+const normalizePalette = (value) => COLOR_PALETTE_LEGACY_MAP[value] || value || "";
 
 export default function MyStyle() {
   const navigate = useNavigate();
@@ -39,8 +59,8 @@ export default function MyStyle() {
     profileService.getProfile()
       .then((data) => {
         if (data) {
-          setSkinTone(data.skinTone || "");
-          setPalette(data.colorPalette || "");
+          setSkinTone(normalizeSkinTone(data.skinTone));
+          setPalette(normalizePalette(data.colorPalette));
         }
       })
       .catch(() => {})
@@ -50,7 +70,7 @@ export default function MyStyle() {
   const handleSave = async () => {
     setSaving(true); setServerError(""); setSuccessMsg("");
     try {
-      await profileService.updateSkin({ skinTone, colorPalette: palette });
+      await profileService.updateSkin({ skinTone: normalizeSkinTone(skinTone), colorPalette: normalizePalette(palette) });
       setSuccessMsg("¡Estilo guardado correctamente!");
       setTimeout(() => setSuccessMsg(""), 3500);
     } catch (err) {

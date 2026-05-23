@@ -1,9 +1,10 @@
-import { createContext, useContext, useState, useEffect } from "react"
-import { api } from "../services/api"
+import { createContext, useCallback, useEffect, useState } from "react"
+import { api, registerUnauthorizedHandler } from "../services/api"
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext(null)
 
-const USER_KEY  = "auth_user"
+const USER_KEY = "dressed_user_display"
 
 function saveUser(userData) {
   localStorage.setItem(USER_KEY, JSON.stringify(userData))
@@ -22,23 +23,23 @@ function getStoredUser() {
   }
 }
 
-function isTokenExpired(token) {
-  try {
-    const parts = token.split(".")
-    if (parts.length !== 3) return false
-    const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")))
-    if (!payload.exp) return false
-    return Date.now() / 1000 > payload.exp
-  } catch {
-    return false
-  }
-}
-
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    registerUnauthorizedHandler(() => {
+      clearUser()
+      setUser(null)
+      if (import.meta.env.MODE !== "test") {
+        try {
+          window.location.href = "/login"
+        } catch {
+          // En entornos sin navegación completa, solo limpiamos la sesión.
+        }
+      }
+    })
+
     const savedUser = getStoredUser()
 
     if (savedUser) {
@@ -48,9 +49,17 @@ export function AuthProvider({ children }) {
     api("/api/auth/me")
       .then((data) => {
         if (data) {
-          const updated = { id: data.id, email: data.email, name: data.name ?? savedUser?.name }
+          const updated = {
+            ...savedUser,
+            id: data.id,
+            email: data.email,
+            name: data.name ?? savedUser?.name,
+          }
           saveUser(updated)
           setUser(updated)
+        } else {
+          clearUser()
+          setUser(null)
         }
       })
       .catch(() => {
@@ -58,14 +67,18 @@ export function AuthProvider({ children }) {
         setUser(null)
       })
       .finally(() => setLoading(false))
+
+    return () => {
+      registerUnauthorizedHandler(null)
+    }
   }, [])
 
-  const login = async (userData) => {
+  const login = useCallback((userData) => {
     saveUser(userData)
     setUser(userData)
-  }
+  }, [])
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await api("/api/auth/logout", { method: "POST" })
     } catch {
@@ -74,15 +87,15 @@ export function AuthProvider({ children }) {
       clearUser()
       setUser(null)
     }
-  }
+  }, [])
 
-  const updateUserProfile = (updatedFields) => {
+  const updateUserProfile = useCallback((updatedFields) => {
     setUser((prev) => {
       const next = { ...prev, ...updatedFields }
-      localStorage.setItem(USER_KEY, JSON.stringify(next))
+      saveUser(next)
       return next
     })
-  }
+  }, [])
 
   return (
     <AuthContext.Provider value={{ user, loading, login, logout, updateUserProfile }}>
