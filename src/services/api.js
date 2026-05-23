@@ -17,8 +17,12 @@ export const api = async (endpoint, options = {}) => {
   });
 
   if (res.status === 401) {
-    if (onUnauthorized) onUnauthorized();
-    throw new Error("Sesión expirada. Por favor inicia sesión nuevamente.");
+    // /api/auth/me verifica si hay sesión activa — un 401 aquí
+    // significa "no hay sesión", no "sesión expirada". No redirigir.
+    if (endpoint !== "/api/auth/me" && onUnauthorized) {
+      onUnauthorized();
+    }
+    throw new Error("No autenticado");
   }
 
   if (!res.ok) {
@@ -27,5 +31,7 @@ export const api = async (endpoint, options = {}) => {
   }
 
   if (res.status === 204) return null;
-  return res.json();
+  const text = await res.text();
+  if (!text) return null;
+  return JSON.parse(text);
 };
