@@ -6,8 +6,8 @@ import PrivateRoute from "../components/PrivateRoute";
 import * as UseAuthModule from "../hooks/useAuth";
 
 // ── Helper: monta PrivateRoute con un contexto de auth controlado ─────
-function renderPrivateRoute({ user = null, loading = false } = {}) {
-  vi.spyOn(UseAuthModule, "useAuth").mockReturnValue({ user, loading });
+function renderPrivateRoute({ user = null, loading = false, serverVerified = false } = {}) {
+  vi.spyOn(UseAuthModule, "useAuth").mockReturnValue({ user, loading, serverVerified });
 
   render(
     <MemoryRouter initialEntries={["/dashboard"]}>
@@ -43,7 +43,7 @@ describe("PrivateRoute", () => {
   });
 
   it("muestra el contenido protegido cuando hay usuario autenticado", () => {
-    renderPrivateRoute({ user: { id: 1, name: "Test" }, loading: false });
+    renderPrivateRoute({ user: { id: 1, name: "Test" }, loading: false, serverVerified: true });
     expect(screen.getByText("Contenido protegido")).toBeInTheDocument();
     expect(screen.queryByText("Página de login")).not.toBeInTheDocument();
   });

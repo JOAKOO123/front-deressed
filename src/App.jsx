@@ -15,17 +15,21 @@ import Favorites from "./pages/Favorites";
 function App() {
   return (
     <Routes>
+      {/* Rutas públicas */}
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<AuthPage defaultTab="login" />} />
       <Route path="/register" element={<AuthPage defaultTab="register" />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/dashboard"       element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-      <Route path="/profile"         element={<PrivateRoute><Profile /></PrivateRoute>} />
+
+      <Route path="/products" element={<Products />} />
+      <Route path="/my-style" element={<MyStyle />} />
+      <Route path="/clothing-preferences" element={<ClothingPreferences />} />
+
+      {/* Rutas privadas — requieren sesión activa */}
+      <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+      <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
       <Route path="/size-adjustment" element={<PrivateRoute><SizeAdjustment /></PrivateRoute>} />
-      <Route path="/products"        element={<PrivateRoute><Products /></PrivateRoute>} />
-      <Route path="/my-style"        element={<PrivateRoute><MyStyle /></PrivateRoute>} />
-      <Route path="/clothing-preferences" element={<PrivateRoute><ClothingPreferences /></PrivateRoute>} />
       <Route path="/favorites" element={<PrivateRoute><Favorites /></PrivateRoute>} />
     </Routes>
   );

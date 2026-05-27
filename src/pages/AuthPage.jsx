@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -43,11 +43,17 @@ function Field({ label, error, isLogin, ...props }) {
 
 export default function AuthPage({ defaultTab = "login" }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, user } = useAuth();
   const isLogin = defaultTab === "login";
   const [serverError, setServerError] = useState("");
 
-  useEffect(() => { if (user) navigate("/dashboard", { replace: true }); }, [user, navigate]);
+  // Destino después del login: si viene con ?redirect= vuelve ahí, sino al dashboard
+  const redirectTo = new URLSearchParams(location.search).get("redirect") || "/dashboard";
+
+  useEffect(() => {
+    if (user) navigate(redirectTo, { replace: true });
+  }, [user, navigate, redirectTo]);
 
   const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm({ resolver: zodResolver(isLogin ? loginSchema : registerSchema) });
 
@@ -60,9 +66,14 @@ export default function AuthPage({ defaultTab = "login" }) {
         ? await authService.login(data.email, data.password)
         : await authService.register(data.email, data.password);
       await login({ id: result?.id, email: result?.email || data.email });
-      navigate("/dashboard", { replace: true });
-    } catch (err) {
-      setServerError(err.message || "Ocurrió un error inesperado. Intenta de nuevo.");
+      navigate(redirectTo, { replace: true });
+    } catch {
+      // Para login y registro usamos mensajes controlados según el tipo de error
+      if (isLogin) {
+        setServerError("Credenciales incorrectas. Verifica tu email y contraseña.")
+      } else {
+        setServerError("No fue posible crear la cuenta. Intenta de nuevo.")
+      }
     }
   };
 

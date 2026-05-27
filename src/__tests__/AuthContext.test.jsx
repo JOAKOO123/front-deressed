@@ -95,12 +95,11 @@ describe("AuthContext", () => {
   });
 
   it("hidrata el display guardado mientras valida la cookie", async () => {
-    localStorage.setItem(USER_KEY, JSON.stringify({ id: 2, name: "Guardado", email: "guardado@test.com" }));
+    localStorage.setItem(USER_KEY, JSON.stringify({ name: "Guardado", email: "guardado@test.com" }));
 
-    globalThis.fetch.mockImplementationOnce(async () => ({
-      ok: true,
-      status: 200,
-      json: async () => ({ id: 2, email: "guardado@test.com", name: "Guardado" }),
+    let resolveMe;
+    globalThis.fetch.mockImplementationOnce(() => new Promise((resolve) => {
+      resolveMe = resolve;
     }));
 
     let captured;
@@ -108,7 +107,19 @@ describe("AuthContext", () => {
       renderWithAuth((v) => { captured = v; });
     });
 
+    expect(captured.user).toMatchObject({ name: "Guardado", email: "guardado@test.com" });
+    expect(captured.serverVerified).toBe(false);
+
+    await act(async () => {
+      resolveMe({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ id: 2, email: "guardado@test.com", name: "Guardado" }),
+      });
+    });
+
     expect(captured.user).toMatchObject({ id: 2, name: "Guardado" });
+    expect(captured.serverVerified).toBe(true);
   });
 
   it("limpia la sesión si el backend rechaza la cookie", async () => {
