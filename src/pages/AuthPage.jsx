@@ -1,33 +1,34 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useAuth } from "../hooks/useAuth";
-import { authService } from "../services/authService";
+import { useEffect, useState } from "react"
+import { useNavigate, useLocation } from "react-router-dom"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { GoogleLogin } from "@react-oauth/google"
+import { useAuth } from "../hooks/useAuth"
+import { authService } from "../services/authService"
 
 const dominiosPermitidos = [
-  "gmail.com","googlemail.com","hotmail.com","hotmail.cl","hotmail.es",
-  "outlook.com","outlook.cl","outlook.es","live.com","live.cl","msn.com",
-  "yahoo.com","yahoo.es","yahoo.cl","icloud.com","me.com","mac.com",
-  "protonmail.com","proton.me","zoho.com","duoc.cl","duocuc.cl","uc.cl","usach.cl",
-  "uchile.cl","utem.cl","udd.cl","udp.cl","uai.cl","pucv.cl","uv.cl","ufro.cl",
-];
+  "gmail.com", "googlemail.com", "hotmail.com", "hotmail.cl", "hotmail.es",
+  "outlook.com", "outlook.cl", "outlook.es", "live.com", "live.cl", "msn.com",
+  "yahoo.com", "yahoo.es", "yahoo.cl", "icloud.com", "me.com", "mac.com",
+  "protonmail.com", "proton.me", "zoho.com", "duoc.cl", "duocuc.cl", "uc.cl", "usach.cl",
+  "uchile.cl", "utem.cl", "udd.cl", "udp.cl", "uai.cl", "pucv.cl", "uv.cl", "ufro.cl",
+]
 
 const emailValidation = z.string().min(1, "El email es requerido").refine((val) => {
-  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!regex.test(val)) return false;
-  return dominiosPermitidos.includes(val.split("@")[1]?.toLowerCase());
-}, "Ingresa un correo válido (Gmail, Outlook, Hotmail, DuocUC, etc.)");
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!regex.test(val)) return false
+  return dominiosPermitidos.includes(val.split("@")[1]?.toLowerCase())
+}, "Ingresa un correo válido (Gmail, Outlook, Hotmail, DuocUC, etc.)")
 
 const passwordValidation = z.string()
   .min(8, "Mínimo 8 caracteres")
   .refine((val) => /[A-Z]/.test(val), "Debe tener al menos una mayúscula")
-  .refine((val) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(val), "Debe tener al menos un carácter especial (!@#$%...)");
+  .refine((val) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(val), "Debe tener al menos un carácter especial (!@#$%...)")
 
-const loginSchema = z.object({ email: emailValidation, password: passwordValidation, rememberMe: z.boolean().optional() });
+const loginSchema = z.object({ email: emailValidation, password: passwordValidation, rememberMe: z.boolean().optional() })
 const registerSchema = z.object({ email: emailValidation, password: passwordValidation, confirmPassword: z.string() })
-  .refine((d) => d.password === d.confirmPassword, { message: "Las contraseñas no coinciden", path: ["confirmPassword"] });
+  .refine((d) => d.password === d.confirmPassword, { message: "Las contraseñas no coinciden", path: ["confirmPassword"] })
 
 function Field({ label, error, isLogin, ...props }) {
   return (
@@ -49,33 +50,43 @@ export default function AuthPage({ defaultTab = "login" }) {
   const [serverError, setServerError] = useState("");
 
   // Destino después del login: si viene con ?redirect= vuelve ahí, sino al dashboard
-  const redirectTo = new URLSearchParams(location.search).get("redirect") || "/dashboard";
+  const redirectTo = new URLSearchParams(location.search).get("redirect") || "/";
 
   useEffect(() => {
     if (user) navigate(redirectTo, { replace: true });
   }, [user, navigate, redirectTo]);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm({ resolver: zodResolver(isLogin ? loginSchema : registerSchema) });
+  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm({
+    resolver: zodResolver(isLogin ? loginSchema : registerSchema),
+  })
 
-  useEffect(() => { reset(); setServerError(""); }, [defaultTab, reset]);
+  useEffect(() => { reset(); setServerError("") }, [defaultTab, reset])
 
   const onSubmit = async (data) => {
-    setServerError("");
+    setServerError("")
     try {
       const result = isLogin
         ? await authService.login(data.email, data.password)
-        : await authService.register(data.email, data.password);
-      await login({ id: result?.id, email: result?.email || data.email });
-      navigate(redirectTo, { replace: true });
+        : await authService.register(data.email, data.password)
+      await login({ id: result?.id, email: result?.email || data.email })
+      navigate(redirectTo, { replace: true })
     } catch {
-      // Para login y registro usamos mensajes controlados según el tipo de error
-      if (isLogin) {
-        setServerError("Credenciales incorrectas. Verifica tu email y contraseña.")
-      } else {
-        setServerError("No fue posible crear la cuenta. Intenta de nuevo.")
-      }
+      setServerError(isLogin
+        ? "Credenciales incorrectas. Verifica tu email y contraseña."
+        : "No fue posible crear la cuenta. Intenta de nuevo.")
     }
-  };
+  }
+
+  const onGoogleSuccess = async (credentialResponse) => {
+    setServerError("")
+    try {
+      const result = await authService.loginWithGoogle(credentialResponse.credential)
+      await login({ id: result?.id, email: result?.email })
+      navigate(redirectTo, { replace: true })
+    } catch {
+      setServerError("No se pudo iniciar sesión con Google. Intenta de nuevo.")
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -124,9 +135,28 @@ export default function AuthPage({ defaultTab = "login" }) {
             <button type="submit" disabled={isSubmitting} className={`mt-2 py-3 rounded-lg font-semibold text-sm transition-all ${isLogin ? "bg-white text-black hover:bg-gray-200" : "bg-black text-white hover:bg-gray-800"} disabled:opacity-50 disabled:cursor-not-allowed`}>
               {isSubmitting ? "Cargando..." : isLogin ? "Iniciar sesión" : "Crear cuenta"}
             </button>
+
+            <div className={`flex items-center gap-3 ${isLogin ? "text-gray-600" : "text-gray-400"}`}>
+              <div className={`flex-1 h-px ${isLogin ? "bg-gray-800" : "bg-gray-200"}`} />
+              <span className="text-xs">o</span>
+              <div className={`flex-1 h-px ${isLogin ? "bg-gray-800" : "bg-gray-200"}`} />
+            </div>
+
+            <div className="flex justify-center">
+              <GoogleLogin
+                onSuccess={onGoogleSuccess}
+                onError={() => setServerError("No se pudo iniciar sesión con Google.")}
+                theme={isLogin ? "filled_black" : "outline"}
+                shape="rectangular"
+                size="large"
+                width="400"
+                text={isLogin ? "signin_with" : "signup_with"}
+                locale="es"
+              />
+            </div>
           </form>
         </div>
       </div>
     </div>
-  );
+  )
 }

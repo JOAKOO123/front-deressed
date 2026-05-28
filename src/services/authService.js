@@ -28,4 +28,11 @@ export const authService = {
       body: JSON.stringify({ token, newPassword }),
     });
   },
+
+  async loginWithGoogle(credential) {
+    return api("/api/auth/google", {
+      method: "POST",
+      body: JSON.stringify({ credential }),
+    });
+  },
 };

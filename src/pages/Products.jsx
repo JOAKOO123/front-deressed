@@ -1,43 +1,69 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import AppLayout from "../components/AppLayout";
 import Spinner from "../components/Spinner";
 import ProductCard from "../components/ProductCard";
 import { productService } from "../services/productService";
 
 const CATEGORIES = [
-  { value: "all",    label: "Todos"   },
-  { value: "JEANS",  label: "Jeans"   },
+  { value: "all", label: "Todos" },
+  { value: "JEANS", label: "Jeans" },
   { value: "POLERAS", label: "Poleras" },
   { value: "ZAPATILLAS", label: "Zapatillas" },
   { value: "ACCESORIOS", label: "Accesorios" },
 ];
 
-const PRICE_MAX = 100000;
+const PAGE_SIZE = 20;
+const PRICE_MAX = 150000;
 
 export default function Products() {
-  const [products, setProducts]       = useState([]);
-  const [loading, setLoading]         = useState(true);
-  const [error, setError]             = useState("");
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [activeCategory, setCategory] = useState("all");
-  const [priceRange, setPriceRange]   = useState([0, PRICE_MAX]);
+  const [priceRange, setPriceRange] = useState([0, PRICE_MAX]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
 
-  useEffect(() => {
-    productService.getProducts()
-      .then(setProducts)
+  const fetchProducts = useCallback((pageNum, category) => {
+    setLoading(true);
+    setError("");
+    productService.getProductsPaginated({
+      category: category !== "all" ? category : undefined,
+      page: pageNum,
+      pageSize: PAGE_SIZE,
+    })
+      .then(({ products: data, totalPages: tp, totalElements: te }) => {
+        setProducts(data);
+        setTotalPages(tp);
+        setTotalElements(te);
+      })
       .catch(() => setError("No se pudieron cargar los productos. Intenta de nuevo."))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    fetchProducts(page, activeCategory);
+  }, [page, activeCategory, fetchProducts]);
+
+  const handleCategory = (cat) => {
+    setCategory(cat);
+    setPage(0);
+  };
 
   const dataMin = useMemo(() => Math.min(...products.map((p) => p.price), 0), [products]);
   const dataMax = useMemo(() => Math.max(...products.map((p) => p.price), PRICE_MAX), [products]);
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
-      const catOk   = activeCategory === "all" || p.category === activeCategory;
-      const priceOk = p.price >= priceRange[0] && p.price <= priceRange[1];
-      return catOk && priceOk;
+      return p.price >= priceRange[0] && p.price <= priceRange[1];
     });
-  }, [products, activeCategory, priceRange]);
+  }, [products, priceRange]);
+
+  const pages = Array.from({ length: totalPages }, (_, i) => i);
+  const visiblePages = pages.filter(
+    (p) => p === 0 || p === totalPages - 1 || Math.abs(p - page) <= 2,
+  );
 
   return (
     <AppLayout>
@@ -94,25 +120,28 @@ export default function Products() {
         </aside>
 
         {/* Grid de productos */}
-        <section className="flex-1 overflow-y-auto p-6">
+        <section className="flex-1 overflow-y-auto p-6 flex flex-col">
           <div className="mb-5">
             <h1 className="text-2xl font-bold mb-1">Ropa</h1>
             <p className="text-sm text-gray-400">
-              {loading ? "Cargando..." : `${filtered.length} producto${filtered.length !== 1 ? "s" : ""} encontrado${filtered.length !== 1 ? "s" : ""}`}
+              {loading
+                ? "Cargando..."
+                : `${totalElements} producto${totalElements !== 1 ? "s" : ""} · página ${page + 1} de ${totalPages}`}
             </p>
           </div>
 
           {loading && (
-            <div className="flex items-center justify-center py-20">
+            <div className="flex items-center justify-center py-20 flex-1">
               <Spinner text="Cargando productos..." />
             </div>
           )}
 
           {!loading && error && (
-            <div className="flex items-center justify-center py-20">
+            <div className="flex items-center justify-center py-20 flex-1">
               <div className="text-center flex flex-col gap-3">
                 <p className="text-gray-500 text-sm">{error}</p>
-                <button onClick={() => window.location.reload()} className="text-sm font-semibold underline underline-offset-2">
+                <button onClick={() => fetchProducts(page, activeCategory)}
+                  className="text-sm font-semibold underline underline-offset-2">
                   Reintentar
                 </button>
               </div>
@@ -120,7 +149,7 @@ export default function Products() {
           )}
 
           {!loading && !error && filtered.length === 0 && (
-            <div className="flex items-center justify-center py-20">
+            <div className="flex items-center justify-center py-20 flex-1">
               <div className="text-center flex flex-col gap-2">
                 <p className="text-2xl">🔍</p>
                 <p className="font-semibold text-gray-700">Sin resultados</p>
@@ -134,6 +163,46 @@ export default function Products() {
               {filtered.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
+            </div>
+          )}
+
+          {!loading && totalPages > 1 && (
+            <div className="flex items-center justify-center gap-1 mt-8 pb-2">
+              <button
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+                className="px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-30 hover:bg-gray-100 transition-colors"
+              >
+                ←
+              </button>
+
+              {visiblePages.map((p, i) => {
+                const prev = visiblePages[i - 1];
+                const showEllipsis = prev !== undefined && p - prev > 1;
+                return (
+                  <span key={p} className="flex items-center gap-1">
+                    {showEllipsis && <span className="px-1 text-gray-400">...</span>}
+                    <button
+                      onClick={() => setPage(p)}
+                      className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors
+                        ${page === p
+                          ? "bg-black text-white"
+                          : "hover:bg-gray-100 text-gray-600"
+                        }`}
+                    >
+                      {p + 1}
+                    </button>
+                  </span>
+                );
+              })}
+
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                disabled={page === totalPages - 1}
+                className="px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-30 hover:bg-gray-100 transition-colors"
+              >
+                →
+              </button>
             </div>
           )}
         </section>

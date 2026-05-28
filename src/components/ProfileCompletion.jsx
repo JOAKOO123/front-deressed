@@ -16,7 +16,16 @@ export default function ProfileCompletion({ completion, loading }) {
     );
   }
 
-  const { sections, percent, doneFields, totalFields } = completion;
+  if (!completion) {
+    return (
+      <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+        <div className="h-4 w-40 rounded bg-gray-100 animate-pulse mb-4" />
+        <div className="h-3 w-full rounded-full bg-gray-100 animate-pulse" />
+      </div>
+    )
+  }
+
+  const { sections = [], percent = 0, doneFields = 0, totalFields = 0 } = completion
 
   // Color dinámico de la barra según porcentaje
   const barColor =
