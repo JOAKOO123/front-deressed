@@ -50,7 +50,7 @@ export default function AuthPage({ defaultTab = "login" }) {
   const [serverError, setServerError] = useState("");
 
   // Destino después del login: si viene con ?redirect= vuelve ahí, sino al dashboard
-  const redirectTo = new URLSearchParams(location.search).get("redirect") || "/dashboard";
+  const redirectTo = new URLSearchParams(location.search).get("redirect") || "/";
 
   useEffect(() => {
     if (user) navigate(redirectTo, { replace: true });
