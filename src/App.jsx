@@ -11,6 +11,8 @@ import Products from "./pages/Products";
 import MyStyle from "./pages/MyStyle";
 import ClothingPreferences from "./pages/ClothingPreferences";
 import Favorites from "./pages/Favorites";
+import AdminRoute from "./components/AdminRoute";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   return (
@@ -31,6 +33,7 @@ function App() {
       <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
       <Route path="/size-adjustment" element={<PrivateRoute><SizeAdjustment /></PrivateRoute>} />
       <Route path="/favorites" element={<PrivateRoute><Favorites /></PrivateRoute>} />
+      <Route path="/admin" element={<PrivateRoute><AdminRoute><AdminDashboard /></AdminRoute></PrivateRoute>} />
     </Routes>
   );
 }
