@@ -73,6 +73,7 @@ export function AuthProvider({ children }) {
             id: data.id,
             email: data.email,
             name: data.name ?? displayCache?.name,
+            role: data.role ?? "user",
           }
           saveDisplayCache(verified)
           setUser(verified)
@@ -100,6 +101,7 @@ export function AuthProvider({ children }) {
       id: userData.id,
       email: userData.email,
       name: userData.name,
+      role: userData.role ?? "user",
     }
     saveDisplayCache(safe)
     setUser(safe)
