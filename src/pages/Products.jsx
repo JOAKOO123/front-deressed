@@ -4,26 +4,28 @@ import Spinner from "../components/Spinner";
 import ProductCard from "../components/ProductCard";
 import { productService } from "../services/productService";
 
-const CATEGORIES = [
-  { value: "all", label: "Todos" },
-  { value: "JEANS", label: "Jeans" },
-  { value: "POLERAS", label: "Poleras" },
-  { value: "ZAPATILLAS", label: "Zapatillas" },
-  { value: "ACCESORIOS", label: "Accesorios" },
-];
-
 const PAGE_SIZE = 20;
 const PRICE_MAX = 150000;
 
 export default function Products() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [activeCategory, setCategory] = useState("all");
-  const [priceRange, setPriceRange] = useState([0, PRICE_MAX]);
-  const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const [products, setProducts]           = useState([]);
+  const [categories, setCategories]       = useState([]);
+  const [loading, setLoading]             = useState(true);
+  const [error, setError]                 = useState("");
+  const [activeCategory, setCategory]     = useState("all");
+  const [priceRange, setPriceRange]       = useState([0, PRICE_MAX]);
+  const [page, setPage]                   = useState(0);
+  const [totalPages, setTotalPages]       = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+
+  useEffect(() => {
+    productService.getProductsPaginated({ page: 0, pageSize: 200 })
+      .then(({ products: data }) => {
+        const unique = [...new Set(data.map((p) => p.category).filter(Boolean))].sort();
+        setCategories(unique);
+      })
+      .catch(() => {});
+  }, []);
 
   const fetchProducts = useCallback((pageNum, category) => {
     setLoading(true);
@@ -55,38 +57,50 @@ export default function Products() {
   const dataMax = useMemo(() => Math.max(...products.map((p) => p.price), PRICE_MAX), [products]);
 
   const filtered = useMemo(() => {
-    return products.filter((p) => {
-      return p.price >= priceRange[0] && p.price <= priceRange[1];
-    });
+    return products.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
   }, [products, priceRange]);
 
   const pages = Array.from({ length: totalPages }, (_, i) => i);
   const visiblePages = pages.filter(
-    (p) => p === 0 || p === totalPages - 1 || Math.abs(p - page) <= 2,
+    (p) => p === 0 || p === totalPages - 1 || Math.abs(p - page) <= 2
   );
+
+  const formatLabel = (cat) => {
+    if (!cat) return cat;
+    return cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase();
+  };
 
   return (
     <AppLayout>
       <div className="flex h-full overflow-hidden">
 
-        {/* Panel de filtros */}
         <aside className="w-56 flex-shrink-0 border-r border-gray-100 p-6 flex flex-col gap-6 overflow-y-auto">
           <div className="flex flex-col gap-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
               Tipo de prenda
             </p>
             <div className="flex flex-col gap-1">
-              {CATEGORIES.map(({ value, label }) => (
+              <button
+                onClick={() => handleCategory("all")}
+                className={`text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                  activeCategory === "all"
+                    ? "bg-black text-white font-semibold"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                Todos
+              </button>
+              {categories.map((cat) => (
                 <button
-                  key={value}
-                  onClick={() => setCategory(value)}
-                  className={`text-left px-3 py-2 rounded-lg text-sm transition-colors
-                    ${activeCategory === value
+                  key={cat}
+                  onClick={() => handleCategory(cat)}
+                  className={`text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                    activeCategory === cat
                       ? "bg-black text-white font-semibold"
                       : "text-gray-600 hover:bg-gray-100"
-                    }`}
+                  }`}
                 >
-                  {label}
+                  {formatLabel(cat)}
                 </button>
               ))}
             </div>
@@ -101,25 +115,36 @@ export default function Products() {
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-gray-400">Mínimo</label>
-                <input type="range" min={dataMin} max={dataMax} step={1000} value={priceRange[0]}
-                  onChange={(e) => { const val = Number(e.target.value); if (val <= priceRange[1]) setPriceRange([val, priceRange[1]]); }}
-                  className="w-full accent-black" />
+                <input
+                  type="range" min={dataMin} max={dataMax} step={1000} value={priceRange[0]}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    if (val <= priceRange[1]) setPriceRange([val, priceRange[1]]);
+                  }}
+                  className="w-full accent-black"
+                />
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-gray-400">Máximo</label>
-                <input type="range" min={dataMin} max={dataMax} step={1000} value={priceRange[1]}
-                  onChange={(e) => { const val = Number(e.target.value); if (val >= priceRange[0]) setPriceRange([priceRange[0], val]); }}
-                  className="w-full accent-black" />
+                <input
+                  type="range" min={dataMin} max={dataMax} step={1000} value={priceRange[1]}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    if (val >= priceRange[0]) setPriceRange([priceRange[0], val]);
+                  }}
+                  className="w-full accent-black"
+                />
               </div>
             </div>
-            <button onClick={() => { setCategory("all"); setPriceRange([dataMin, dataMax]); }}
-              className="text-xs text-gray-400 hover:text-black transition-colors underline underline-offset-2 text-left mt-1">
+            <button
+              onClick={() => { setCategory("all"); setPriceRange([dataMin, dataMax]); }}
+              className="text-xs text-gray-400 hover:text-black transition-colors underline underline-offset-2 text-left mt-1"
+            >
               Limpiar filtros
             </button>
           </div>
         </aside>
 
-        {/* Grid de productos */}
         <section className="flex-1 overflow-y-auto p-6 flex flex-col">
           <div className="mb-5">
             <h1 className="text-2xl font-bold mb-1">Ropa</h1>
@@ -140,8 +165,10 @@ export default function Products() {
             <div className="flex items-center justify-center py-20 flex-1">
               <div className="text-center flex flex-col gap-3">
                 <p className="text-gray-500 text-sm">{error}</p>
-                <button onClick={() => fetchProducts(page, activeCategory)}
-                  className="text-sm font-semibold underline underline-offset-2">
+                <button
+                  onClick={() => fetchProducts(page, activeCategory)}
+                  className="text-sm font-semibold underline underline-offset-2"
+                >
                   Reintentar
                 </button>
               </div>
@@ -184,11 +211,11 @@ export default function Products() {
                     {showEllipsis && <span className="px-1 text-gray-400">...</span>}
                     <button
                       onClick={() => setPage(p)}
-                      className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors
-                        ${page === p
+                      className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${
+                        page === p
                           ? "bg-black text-white"
                           : "hover:bg-gray-100 text-gray-600"
-                        }`}
+                      }`}
                     >
                       {p + 1}
                     </button>
@@ -206,6 +233,7 @@ export default function Products() {
             </div>
           )}
         </section>
+
       </div>
     </AppLayout>
   );

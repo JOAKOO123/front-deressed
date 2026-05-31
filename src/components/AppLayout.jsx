@@ -1,6 +1,6 @@
 import TopBar from "./TopBar";
 import Sidebar from "./Sidebar";
-import Assistant from "./Assistant";
+import Footer from "./Footer";
 
 export default function AppLayout({ children }) {
   return (
@@ -12,8 +12,8 @@ export default function AppLayout({ children }) {
           <main className="flex-1 overflow-y-auto">
             {children}
           </main>
-          <Assistant />
         </div>
+        <Footer />
       </div>
     </div>
   );

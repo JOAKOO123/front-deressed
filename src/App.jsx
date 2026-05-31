@@ -13,6 +13,10 @@ import ClothingPreferences from "./pages/ClothingPreferences";
 import Favorites from "./pages/Favorites";
 import AdminRoute from "./components/AdminRoute";
 import AdminDashboard from "./pages/AdminDashboard";
+import OutfitGenerator from "./pages/OutfitGenerator";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Contact from "./pages/Contact";
 
 function App() {
   return (
@@ -27,12 +31,16 @@ function App() {
       <Route path="/products" element={<Products />} />
       <Route path="/my-style" element={<MyStyle />} />
       <Route path="/clothing-preferences" element={<ClothingPreferences />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/contact" element={<Contact />} />
 
       {/* Rutas privadas — requieren sesión activa */}
       <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
       <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
       <Route path="/size-adjustment" element={<PrivateRoute><SizeAdjustment /></PrivateRoute>} />
       <Route path="/favorites" element={<PrivateRoute><Favorites /></PrivateRoute>} />
+      <Route path="/outfits" element={<PrivateRoute><OutfitGenerator /></PrivateRoute>} />
       <Route path="/admin" element={<PrivateRoute><AdminRoute><AdminDashboard /></AdminRoute></PrivateRoute>} />
     </Routes>
   );

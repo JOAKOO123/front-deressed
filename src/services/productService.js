@@ -17,7 +17,7 @@ export const productService = {
       price: p.price,
       category: p.category,
       image: p.imageUrl,
-      link: p.productLink ? p.productLink + "/p" : null,
+      link: p.productLink ?? null,
     }));
   },
 
@@ -36,7 +36,7 @@ export const productService = {
         price: p.price,
         category: p.category,
         image: p.imageUrl,
-        link: p.productLink ? p.productLink + "/p" : null,
+        link: p.productLink ? p.productLink : null,
       })),
       totalPages: data?.totalPages ?? 0,
       totalElements: data?.totalElements ?? 0,

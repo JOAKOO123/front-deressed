@@ -6,6 +6,8 @@ const NAV_ITEMS = [
   { label: "Mi Estilo",        path: "/my-style"             },
   { label: "Preferencias",     path: "/clothing-preferences" },
   { label: "Ajuste de Tallas", path: "/size-adjustment"      },
+  { label: "Generar Outfit",   path: "/"                     },
+  { label: "Mis Outfits",      path: "/outfits"              },
   { label: "Favoritos",        path: "/favorites"            },
 ];
 
@@ -27,7 +29,7 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="w-1/5 bg-gray-50 p-6 border-r flex flex-col justify-between">
+    <aside className="w-1/6 bg-gray-50 p-6 border-r flex flex-col justify-between">
       <div>
         <div className="flex flex-col items-center mb-6">
           <button
