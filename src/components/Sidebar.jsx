@@ -8,7 +8,6 @@ const NAV_ITEMS = [
   { label: "Ajuste de Tallas", path: "/size-adjustment"      },
   { label: "Generar Outfit",   path: "/"                     },
   { label: "Mis Outfits",      path: "/outfits"              },
-  { label: "Favoritos",        path: "/favorites"            },
 ];
 
 export default function Sidebar() {
